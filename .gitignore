@@ -1,0 +1,16 @@
+# Project Moon — secrets and runtime output
+# Real calendar feed URLs (secret). The committed template is feeds.example.yaml.
+Moon/config/feeds.yaml
+# Per-week runtime output: your event data and personal reflections.
+Moon/weeks/
+
+# Build scaffolding — local-only (HAI-Harness; not part of the product others install).
+Agents/
+Human/
+
+# Python bytecode (the scripts generate this at runtime).
+__pycache__/
+*.pyc
+
+# macOS / iCloud conflicted-copy duplicates (e.g. "README 2.md").
+* 2.*

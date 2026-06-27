@@ -1,0 +1,31 @@
+# Moon — feed configuration TEMPLATE.
+#
+# Copy this file to `feeds.yaml` and fill in your real values:
+#     cp feeds.example.yaml feeds.yaml
+# `feeds.yaml` is GITIGNORED because it holds secret calendar URLs — never commit it.
+#
+# Each of the 8 fixed categories (see categories.md) maps to ONE source:
+#   - a Google Calendar "Secret address in iCal format" URL, or
+#   - a local .ics file path.
+# The category KEY below is what tags every event; the calendar's own internal
+# name is ignored. Keys must match the fixed category set exactly.
+
+# Optional. IANA timezone for week bucketing + time normalization.
+# Omit to auto-detect the system timezone.
+timezone: America/Los_Angeles
+
+feeds:
+  Learn:       https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Build:       https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Career:      https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Habit:       https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Workout:     https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Social:      https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Exploration: https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+  Trash:       https://calendar.google.com/calendar/ical/REPLACE_ME/private-REPLACE_ME/basic.ics
+
+# Local .ics files also work, e.g.:
+#   Build: ~/Downloads/Building_xxxxxxxx@group.calendar.google.com.ics
+#
+# You can also point a single feed at a file without editing this config, e.g.:
+#   moon-weekly --ics Build=~/Downloads/cal.ics
