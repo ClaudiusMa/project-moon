@@ -1,0 +1,5 @@
+# Project Moon — secrets and runtime output
+# Real calendar feed URLs (secret). The committed template is feeds.example.yaml.
+Moon/config/feeds.yaml
+# Per-week runtime output: your event data and personal reflections.
+Moon/weeks/

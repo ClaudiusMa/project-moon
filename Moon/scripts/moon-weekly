@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""Moon M5 — weekly runner.
+
+Chain ingestion -> engine for the most recent completed week (or --week),
+print a summary, and point to the reflection playbook (Engine B).
+
+    moon-weekly                       # most recent completed week, using feeds.yaml
+    moon-weekly --week 2026-W24
+    moon-weekly --ics Build=~/Downloads/cal.ics --timezone America/Los_Angeles
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+from datetime import date
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import moon_common as mc
+import ingest
+import engine
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="Run Moon for one week (ingest -> engine).")
+    ap.add_argument("--week", help="ISO week key (default: most recent completed week)")
+    ap.add_argument("--feeds", help=f"feeds.yaml path (default: {mc.DEFAULT_FEEDS})")
+    ap.add_argument("--ics", action="append", metavar="CATEGORY=PATH",
+                    help="add/override a feed with a local .ics path or URL (repeatable)")
+    ap.add_argument("--timezone", help="IANA tz override")
+    args = ap.parse_args(argv)
+
+    if args.week:
+        year, week = mc.parse_week_key(args.week)
+    else:
+        _, year, week = mc.most_recent_completed_week(date.today())
+    week_key = f"{year}-W{week:02d}"
+
+    print(f"== Moon weekly · {week_key} ==")
+    print("[1/2] Ingesting calendars ...")
+    ingest.run(week_key=week_key, feeds_path=args.feeds,
+               ics_overrides=ingest.parse_ics_overrides(args.ics),
+               tz_name=args.timezone)
+    print("[2/2] Computing cognitive hours ...")
+    engine.run(week_key=week_key)
+
+    report = mc.WEEKS_DIR / week_key / "time-report.md"
+    playbook = mc.MOON_DIR / "playbooks" / "reflection.md"
+    print()
+    print(f"Report: {report}")
+    print(f"Next — weekly reflection ritual: {playbook}")
+    print("  Open it with your agent to run the 6-question reflection for this week.")
+
+
+if __name__ == "__main__":
+    main()

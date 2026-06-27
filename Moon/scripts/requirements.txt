@@ -1,0 +1,6 @@
+# Moon Engine A dependencies.
+# Ingestion (recurrence + tz) needs these; the M2 engine is pure stdlib.
+icalendar>=5.0
+recurring-ical-events>=2.1.0
+PyYAML>=6.0          # feeds.yaml; a minimal fallback parser is used if absent
+# zoneinfo is stdlib on Python 3.9+. On Windows also install: tzdata
