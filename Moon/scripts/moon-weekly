@@ -25,8 +25,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="Run Moon for one week (ingest -> engine).")
     ap.add_argument("--week", help="ISO week key (default: most recent completed week)")
     ap.add_argument("--feeds", help=f"feeds.yaml path (default: {mc.DEFAULT_FEEDS})")
-    ap.add_argument("--ics", action="append", metavar="CATEGORY=PATH",
-                    help="add/override a feed with a local .ics path or URL (repeatable)")
+    ap.add_argument("--ics", action="append", metavar="ID=PATH",
+                    help="add/override a feed (identity id = local .ics path or URL), repeatable")
     ap.add_argument("--timezone", help="IANA tz override")
     args = ap.parse_args(argv)
 

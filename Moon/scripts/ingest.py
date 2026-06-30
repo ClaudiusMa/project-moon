@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Moon Engine A — M1 ingestion.
 
-Read one .ics per category (from feeds.yaml or --ics overrides), expand
+Read one .ics per feed (from the feed config or --ics overrides), expand
 recurrence (RRULE / EXDATE / RECURRENCE-ID overrides), normalize every time to
 the local timezone, bucket into a Mon–Sun ISO week, and emit
 `Moon/weeks/<ISO-week>/events.json` per the data contract:
 
-    [{uid, category, title, start_local, end_local, duration_min}, ...]
+    [{uid, category, title, start_local, end_local, duration_min, all_day}, ...]
 
-Recurrence + tz parsing needs `icalendar` and `recurring-ical-events`
-(see requirements.txt). Reading/writing is otherwise side-effect free.
+`category` is an identity id (the feed it came from), or "invisible" for
+calendars that aren't an identity. Recurrence + tz parsing needs `icalendar` and
+`recurring-ical-events` (see requirements.txt). Reading/writing is side-effect free.
 """
 from __future__ import annotations
 
@@ -63,6 +64,7 @@ def expand_feed(category, src, week_start, week_end, tz):
     import recurring_ical_events
 
     cal = icalendar.Calendar.from_ical(_load_ics_bytes(src))
+    calname = str(cal.get("X-WR-CALNAME", "")).strip()
     occurrences = recurring_ical_events.of(cal).between(week_start, week_end)
 
     events, n_all_day = [], 0
@@ -98,15 +100,16 @@ def expand_feed(category, src, week_start, week_end, tz):
             "start_local": start_local.isoformat(timespec="seconds"),
             "end_local": end_local.isoformat(timespec="seconds"),
             "duration_min": duration_min,
+            "all_day": all_day,
         })
-    return events, n_all_day
+    return events, n_all_day, calname
 
 
 def parse_ics_overrides(items):
     out = {}
     for it in items or []:
         if "=" not in it:
-            raise SystemExit(f"--ics expects CATEGORY=PATH, got: {it!r}")
+            raise SystemExit(f"--ics expects ID=PATH (id from categories.yaml), got: {it!r}")
         k, v = it.split("=", 1)
         out[k.strip()] = v.strip()
     return out
@@ -123,18 +126,19 @@ def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
         _, year, week = mc.most_recent_completed_week(today or date.today())
     week_key = f"{year}-W{week:02d}"
 
-    # build feed map: config file first, then explicit overrides
-    feeds, cfg_tz = {}, None
-    feeds_path = Path(feeds_path) if feeds_path else mc.DEFAULT_FEEDS
+    # build feed map + invisible sources: config file first, then explicit overrides
+    feeds, invisible_srcs, cfg_tz = {}, [], None
+    feeds_path = mc.resolve_feeds_path(feeds_path)
     if feeds_path.exists():
         cfg = mc.load_feeds(feeds_path)
         cfg_tz = cfg.get("timezone")
         feeds.update(cfg.get("feeds", {}))
+        invisible_srcs = list(cfg.get("invisible", []) or [])
     feeds.update(ics_overrides or {})
-    if not feeds:
+    if not feeds and not invisible_srcs:
         raise SystemExit(
-            "No feeds configured. Provide --feeds <path> or --ics CATEGORY=PATH "
-            f"(looked for {feeds_path})."
+            "No feeds configured. Provide a feed file (Astronaut/rocket.md), "
+            f"--feeds <path>, or --ics ID=PATH (looked for {feeds_path})."
         )
 
     # timezone: explicit flag > config file > system local
@@ -145,15 +149,26 @@ def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
         print(f"Week {week_key}  "
               f"[{week_start.date()} .. {(week_end - timedelta(days=1)).date()}]  tz={tz_label}")
 
-    all_events, unknown, total_all_day = [], [], 0
-    for category, src in feeds.items():
-        if category not in mc.CATEGORY_SET:
+    cats = mc.get_categories()
+    # identity feeds, then any "invisible" (non-identity) calendars
+    feed_items = list(feeds.items()) + [(mc.INVISIBLE_ID, s) for s in invisible_srcs]
+    all_events, unknown, total_all_day, cal_names = [], [], 0, {}
+    for category, src in feed_items:
+        if category not in cats and category not in mc.SPECIAL_BUCKETS:
             unknown.append(category)
-        evs, n_ad = expand_feed(category, src, week_start, week_end, tz)
+        evs, n_ad, calname = expand_feed(category, src, week_start, week_end, tz)
         total_all_day += n_ad
         all_events.extend(evs)
+        if calname and category in cats:
+            cal_names[category] = calname
         if verbose:
-            print(f"  {category:<12} {len(evs):>3} events")
+            label = mc.SPECIAL_BUCKETS.get(category, category)
+            print(f"  {label:<24} {len(evs):>3} events")
+
+    # Surface calendar renames every pull: the Google calendar's own name
+    # (X-WR-CALNAME) no longer matches the identity's display_name in categories.yaml.
+    renames = [(cid, cats.name(cid), cal_names[cid]) for cid in cal_names
+               if cal_names[cid].strip().casefold() != cats.name(cid).strip().casefold()]
 
     all_events.sort(key=lambda e: (e["start_local"], e["category"], e["uid"]))
 
@@ -165,19 +180,30 @@ def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
     if verbose:
         print(f"Wrote {len(all_events)} events -> {out_path}")
         if total_all_day:
-            print(f"  note: {total_all_day} all-day event(s) included "
-                  f"(duration = full local day span).")
+            if mc.ALL_DAY_POLICY == "exclude":
+                print(f"  note: {total_all_day} all-day event(s) recorded but "
+                      f"excluded from cognitive hours (ALL_DAY_POLICY=exclude).")
+            else:
+                print(f"  note: {total_all_day} all-day event(s) counted at full "
+                      f"local-day span (ALL_DAY_POLICY=include).")
+        if renames:
+            print("  CHANGE DETECTED — a Google calendar was renamed "
+                  "(its name != categories.yaml display_name):")
+            for cid, expected, actual in renames:
+                print(f"    [{cid}] categories.yaml: \"{expected}\"  |  Google now: \"{actual}\"")
+            print("    If intended, update display_name in Moon/config/categories.yaml "
+                  "(the id stays the same — no data migration).")
         if unknown:
-            print(f"  WARNING: feed categories outside the fixed set: {unknown}")
+            print(f"  WARNING: feed keys not found in categories.yaml: {unknown}")
     return out_path, all_events
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Moon M1 ingestion: .ics -> weekly events.json")
     ap.add_argument("--week", help="ISO week key, e.g. 2026-W24 (default: most recent completed week)")
-    ap.add_argument("--feeds", help=f"feeds.yaml path (default: {mc.DEFAULT_FEEDS})")
-    ap.add_argument("--ics", action="append", metavar="CATEGORY=PATH",
-                    help="add/override a feed with a local .ics path or URL (repeatable)")
+    ap.add_argument("--feeds", help="feed file path (default: Astronaut/rocket.md, else Moon/config/feeds.yaml)")
+    ap.add_argument("--ics", action="append", metavar="ID=PATH",
+                    help="add/override a feed (identity id = local .ics path or URL), repeatable")
     ap.add_argument("--timezone", help="IANA tz override (default: config, then system local)")
     args = ap.parse_args(argv)
     run(week_key=args.week, feeds_path=args.feeds,

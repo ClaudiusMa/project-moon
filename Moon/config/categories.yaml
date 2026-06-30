@@ -1,0 +1,44 @@
+# Moon — the canonical category set: eight IDENTITY ACCOUNTS.
+#
+# A category is an *identity account*, chosen at SCHEDULING time as the intended
+# investment — never inferred from a title afterward. `feeds.yaml` is keyed by the
+# `id` below; reports render `display_name`. Changing only how an identity is worded?
+# Edit `display_name` — the `id` is the stable contract shared by feeds.yaml,
+# events.json, and trends.csv, so wording can change without a data migration.
+#
+# The rich definitions (meaning, examples, boundaries, tie-breakers) live in
+# categories.md. The short `core_question` here is the one-line test for "did this
+# hour fund this identity?" and must stay in sync with the core question under each
+# identity in categories.md.
+#
+# `version` stamps every time-report and every trends.csv row. Bump it only on a
+# breaking change to the set (ids added / removed / renamed) so historical trend
+# rows stay attributable to the category set that produced them.
+
+version: identity_v1
+
+identities:
+  - id: support_self_family
+    display_name: I support myself and family
+    core_question: Did my hours this week secure me and the people I provide for?
+  - id: designer_taste
+    display_name: I am a designer with exceptional taste
+    core_question: Did I sharpen my eye and raise my bar for what's good?
+  - id: builder
+    display_name: I'm a builder
+    core_question: Did I make something real — ship, not just plan?
+  - id: reliable_man
+    display_name: I am a helpful man
+    core_question: Did I keep my word and stay on top of what I own?
+  - id: exceptional_people
+    display_name: I am surrounded by exceptional people
+    core_question: Did I put myself near people who raise my standard?
+  - id: superman
+    display_name: I am a superman
+    core_question: Did I build a body and energy that can carry the rest?
+  - id: loyal_friend
+    display_name: I am a loyal friend
+    core_question: Did I show up for the people who count on me?
+  - id: grateful_son
+    display_name: I am a grateful son
+    core_question: Did I stay close to and honor the family I come from?

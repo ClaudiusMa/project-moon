@@ -4,91 +4,82 @@ Engine B's weekly ritual. An agentic tool (or a human) follows this playbook to 
 a short guided reflection and save it as the week's `reflection.md`. It is
 **tool-agnostic** — nothing here depends on a specific assistant.
 
+## Cadence
+
+The review is done the **following week**, looking back at the week that just closed —
+so the framing is "last week." The review also sets the plan for the week ahead, which
+carries forward: this reflection's *"What do you plan to do next week?"* becomes the next
+reflection's *"What's your plan?"*, so each week you see plan versus reality.
+
 ## Purpose
 
-Six questions, asked **one at a time**, lightly proofread, and saved as a clean
-dated record for one ISO week. The "what did you do this week?" answer is
-auto-drafted from that week's events so the person starts from a recap, not a blank
-page.
+Bare questions — no prompts, no hints, no auto-fill — answered in one pass. The absence
+of scaffolding is the point: what the person recalls unaided, and what they mention
+first, reveals how intentionally they lived and what actually weighs on them. Happiness
+is a free list. *"What's your plan?"* is **carried in** from last week (not asked).
 
-## Inputs
+## Inputs (read-only)
 
-- **Target week** — an ISO week key, `YYYY-Www` (e.g. `2026-W24`). Default to the
-  **most recent completed week** (last Monday–Sunday in local time). Confirm the
-  week with the person before starting.
-- **`Moon/weeks/<ISO-week>/events.json`** *(optional, read-only)* — used only to
-  auto-draft question 4. This playbook **never writes** `events.json`. If the file
-  is missing, skip the auto-draft and ask question 4 cold (see Degraded mode).
+- **Target week** — the just-completed ISO week to review (default: most recent
+  completed week). Confirm it.
+- **Previous reflection** — read only to carry its *"What do you plan to do next week?"*
+  forward into this reflection's *"What's your plan?"*. If there's none, that section is
+  "No plan from last week."
+
+This playbook does **not** read `events.json` and writes nothing except the reflection
+file. Keeping recall unaided is deliberate — the calendar/data view belongs to the coach.
 
 ## Output
 
-- **`Moon/weeks/<ISO-week>/reflection.md`** — written from the template at the
-  bottom. This file is gitignored (it is personal) and is a dated record: do **not**
-  overwrite an existing reflection for the week without explicit confirmation.
+- **`Moon/weeks/<ISO-week>/reflection.md`** — written from the template at the bottom.
+  Gitignored (personal) and dated: do **not** overwrite an existing reflection without
+  explicit confirmation.
 
 ## Procedure
 
-1. **Pick the week.** Resolve the target ISO week and confirm it with the person.
-2. **Prep the recap (for Q4).** If `events.json` exists for the week, read it
-   (read-only) and build the draft described under question 4. If not, note that
-   you'll ask question 4 directly.
-3. **Ask the six questions one at a time.** Ask a question, wait for the answer,
-   then move on. Do not batch them or show the next question before the current one
-   is answered. Keep the person's own voice.
-4. **Proofread each answer** as you receive it, under the rule below.
-5. **Write the file** from the template once all six are answered. Read it back to
-   the person.
+1. **Pick the week** (the completed week to review) and confirm it.
+2. **Carry the plan.** Read the previous reflection's *"What do you plan to do this
+   week?"* and place it in this reflection's *"What's your plan?"* (verbatim). If there's
+   no prior reflection, use "No plan from last week."
+3. **Present the bare questions all at once** — exactly as written below, nothing added.
+   Show the carried plan as context. Let the person answer in one pass.
+4. **Proofread each answer** under the rule below.
+5. **Write the file** from the template and read it back.
 
 ## Proofreading rule
 
-After each answer, fix only **typos, spelling, punctuation, and grammar**. Do
-**not** change meaning, do not rephrase for style, do not add or remove ideas, and
-do not "improve" the content. Preserve the person's voice and word choices. If a
-correction might change the meaning, leave the original untouched. The reflection
-is *their* record; you are a copy-editor, not a co-author.
+Fix only **typos, spelling, punctuation, and grammar**. Do **not** change meaning,
+rephrase for style, or add/remove ideas. Preserve the person's voice and word choices
+(including casual ones). If a correction might change meaning, leave it. You are a
+copy-editor, not a co-author.
 
-## The six questions
+## The questions the person answers
 
-Ask these in order, one at a time. The wording in **bold** is the question to ask;
-the note under it is guidance for you, not something to read aloud.
+Present these verbatim, all together, with **nothing added** — no guidance, examples, or
+drafts. (*"What's your plan?"* is not here — it is carried in from last week.)
 
-1. **Happiness — how are you feeling about this week?**
-   Let them answer freely. If they give a number, capture it (a 1–10 read is handy
-   for trends); a number is optional, never required.
+1. Happiness
+2. What did you do last week?
+3. How did it go?
+4. What do you plan to do next week?
+5. What might stress you up?
+6. Future-self: would I do anything differently?
 
-2. **What's your plan?**
-   What they intend for the coming week — the shape they want it to take.
+Agent notes (do **not** show these):
 
-3. **How did it go?**
-   How the week that just ended actually went, against what they'd hoped for it.
-
-4. **What did you do this week?**
-   **Auto-draft this from `events.json`.** Read the week's events, group their
-   `title`s by `category`, drop exact duplicates, and present a short first-person
-   recap as a *draft*, e.g.:
-
-   > Here's what your calendar says you did this week — edit or add anything:
-   > - **Build:** Moon ingestion script, refactor parser
-   > - **Workout:** Morning run, climbing
-   > - **Social:** Dinner with A, call with family
-
-   Use only the event titles — don't invent activities or infer beyond what's
-   there. The person edits, trims, or adds to the draft; their final version is the
-   answer. (Degraded mode: if there's no `events.json`, just ask the question
-   directly and let them recall it themselves.)
-
-5. **What might stress you up?**
-   What's coming that could weigh on them — deadlines, obligations, unknowns.
-
-6. **Future-self: would I do anything differently?**
-   Looking back from a little further out, what they'd change.
+- **Happiness** is a free list of what made them happy/proud — capture an optional 1–10
+  only if they volunteer it; never ask for one.
+- **"What's your plan?"** is carried from the previous reflection's *"What do you plan to
+  do this week?"* — show it as context, never ask it fresh.
+- Keep every question **unaided** — no calendar drafts, no event lists, no hints. The
+  unprompted recall is the signal; the coach contrasts it with the schedule afterward.
+- **"What do you plan to do next week?"** carries forward to next week's *"What's your
+  plan?"*.
 
 ## Output template
 
-Write `Moon/weeks/<ISO-week>/reflection.md` exactly in this shape (Obsidian-friendly
-frontmatter + headings). Fill `week` with the ISO key and `date` with the date the
-reflection was completed. `happiness` is optional — include it only if they gave a
-number; otherwise omit that line.
+Write `Moon/weeks/<ISO-week>/reflection.md` in this shape (Obsidian-friendly frontmatter
++ headings). `happiness` is optional — include it only if they gave a number.
 
 ```markdown
 ---
@@ -100,11 +91,15 @@ happiness: <n/10>           # optional; omit if not given
 
 # Reflection — <ISO-week>
 
-## Happiness — how are you feeling about this week?
+## Happiness
 
-<proofread answer>
+<proofread list>
 
 ## What's your plan?
+
+<carried from last week's "What do you plan to do next week?"; "No plan from last week." if none>
+
+## What did you do last week?
 
 <proofread answer>
 
@@ -112,9 +107,9 @@ happiness: <n/10>           # optional; omit if not given
 
 <proofread answer>
 
-## What did you do this week?
+## What do you plan to do next week?
 
-<proofread, person-edited recap>
+<proofread answer — carries to next week's "What's your plan?">
 
 ## What might stress you up?
 
@@ -125,11 +120,13 @@ happiness: <n/10>           # optional; omit if not given
 <proofread answer>
 ```
 
+## Next step
+
+After the reflection is saved, run the **coaching playbook**
+([`coaching.md`](coaching.md)): it reads this reflection plus the week's
+`time-report.md` and `events.json` and gives grounded advice for the week ahead.
+
 ## Degraded mode
 
-- **No `events.json` for the week** — skip the auto-draft; ask question 4 directly.
-  Everything else runs unchanged.
-- **Reflection already exists for the week** — do not overwrite it silently. Show
-  the person the existing reflection and confirm before replacing it.
-- **Reading `events.json` must stay side-effect free** — never modify or delete it
-  from this playbook.
+- **No previous reflection** — *"What's your plan?"* is "No plan from last week."
+- **Reflection already exists for the week** — confirm before overwriting.
