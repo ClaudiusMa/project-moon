@@ -1,88 +1,110 @@
 # Project Moon (登月计划)
 
-Turn your calendar into a weekly record of which **identities** your time actually
-funded, and pair each week with a short guided reflection and coaching. Moon reads
-**per-identity Google calendars** — one per part of the person you're trying to become —
-converts them into **cognitive hours** (whole-hour attention blocks, not stopwatch
-minutes), and tracks the trend over time.
+**Is your calendar funding the person you're trying to become?** Project Moon turns your
+Google Calendar into a weekly mirror of that question — not "what did I do this week," but
+"which version of myself did my time fund."
 
-It's **tool-agnostic and local-first**: a deterministic Python core plus markdown
-playbooks. Any agentic coding tool (Claude Code, Codex, …) or a plain shell + a human
-can run it. Your calendar URLs and your weekly data never leave your machine.
+Tool-agnostic and local-first: a deterministic Python core plus markdown playbooks. Any
+agentic coding tool (Claude Code, Codex, …) or a plain shell + a human can run it. Your
+calendars and weekly data never leave your machine.
 
-## How it works
+## 1. The philosophy
 
-- **One calendar per identity.** Each calendar is an identity account you're investing
-  in — *I support myself and family, I am a designer with exceptional taste, I'm a
-  builder, I am a helpful man, I am surrounded by exceptional people, I am a superman,
-  I am a loyal friend, I am a grateful son* (full definitions and tie-breakers in
-  [`Moon/config/categories.md`](Moon/config/categories.md)). You choose an event's
-  identity when you **schedule** it — by which calendar you put it on, never by parsing
-  its title. Same calendars → same numbers, every time.
-- **Cognitive hours.** Within an identity, overlapping/adjacent events merge into a
-  block and each block rounds **up** to whole hours. A 45-minute focus block costs one
-  cognitive hour, because the leftover minutes aren't really reusable.
-- **An honest mirror.** The report shows every identity's share of your week as a
-  percentage — *all eight, even the ones at 0%*, so an underfunded identity stays
-  visible. Two non-identity slices keep it honest:
-  - **Trash time** — energy-draining, negative time you'd rather not repeat. Surfaced so
-    you can see it and **reduce** it.
-  - **Invisible (unallocated)** — chores, errands, low-return time with no clear purpose.
-    Some is unavoidable; the signal is **don't let it surge**.
-- **Weekly reflection + coaching.** After the numbers, a short reflection (bare
-  questions, answered from memory — you review *last week* and plan *next week*), then a
-  **coach** reads your answers against the actual schedule and gives grounded advice for
-  the week ahead.
+- **A category is an identity account — a person you're choosing to become.** Not an
+  activity bucket ("work," "exercise"), but an identity ("a builder," "a present
+  parent," "an athlete"). **You define your own.** They're personal; there is no fixed
+  list — the set in this repo is *one example*, and yours will be different.
+- **You choose the identity when you schedule, not after.** Each identity is its own
+  Google calendar, and putting an event on it is you declaring *why* you're spending the
+  time. The same coffee is *"surrounded by exceptional people"* if it's a mentor, or
+  *"a loyal friend"* if it's your closest friend — you decide which when you schedule it.
+  Moon never guesses from the title, so the same calendars always produce the same numbers.
+- **Cognitive hours, not minutes.** Within an identity, overlapping/adjacent events merge
+  into a block and round **up** to whole hours — a 45-minute focus block costs one
+  cognitive hour, because the leftover isn't really reusable. The unit models attention,
+  not stopwatch time.
+- **The weekly report is an honest mirror.** It shows each identity's *share* of your week
+  as a percentage. An identity you say matters but funded 2% is the signal that matters.
+- **Reflection + coaching close the loop.** After the numbers, you reflect from memory,
+  then a coach reads your answers against the actual schedule and advises the week ahead.
 
-## Setup
+The goal isn't a perfect taxonomy — it's a weekly check on whether your hours are making
+your desired self real.
 
-1. **Calendars.** In Google Calendar, make one calendar per identity (see
-   [`Moon/config/categories.md`](Moon/config/categories.md)) and put each event on the
-   one that matches *why* you scheduled it. Optionally add a **Trash** calendar
-   (energy-draining time) and use your everyday/primary as **Invisible**.
-2. **Get each feed.** For every calendar, copy its **"Secret address in iCal format"**
-   (Calendar settings → *Integrate calendar*). These URLs auto-refresh, so your data
-   never goes stale — and Moon flags it whenever a calendar's name changes.
-3. **Private feed list.** Create your `Astronaut/` workspace and a `rocket.md` from the
-   template, then paste your URLs:
+## 2. An example (one person's setup)
+
+Here's how the maintainer uses it — an **illustration, not a prescription.** They keep one
+calendar per identity they're investing in:
+
+> *I support myself and family · I'm a builder · I am a designer with exceptional taste ·
+> I am surrounded by exceptional people · I am a superman · I am a loyal friend · I am a
+> grateful son · I am a helpful man*
+
+…plus two non-identity calendars they find useful: a **Trash time** calendar for
+energy-draining hours they want to *cut*, and their default calendar treated as
+**Invisible** (chores / low-return time — fine in small doses, worth watching when it
+surges).
+
+A week then comes back like this *(synthetic numbers, to show the shape)*:
+
+| Identity (this person's) | Cognitive hours | Share |
+| --- | ---: | ---: |
+| I am a superman | 8 | 22% |
+| I'm a builder | 7 | 19% |
+| I support myself and family | 6 | 17% |
+| I am a loyal friend | 5 | 14% |
+| I am surrounded by exceptional people | 3 | 8% |
+| I am a designer with exceptional taste | 2 | 6% |
+| I am a helpful man | 1 | 3% |
+| I am a grateful son | 0 | 0% |
+| _Trash time_ | 1 | 3% |
+| _Invisible (unallocated)_ | 3 | 8% |
+
+The mirror talks: *"builder is my stated priority but landed behind hobbies; grateful-son
+was 0% again; Trash time is creeping up."* **Your identities, and what you learn from
+them, will be your own.**
+
+## 3. Set it up (make it yours)
+
+1. **Name your identities.** Pick the few people you're trying to become — 3–8 is plenty
+   (a parent, a writer, an athlete, a founder… whatever *you're* investing in). Optionally
+   add a **Trash** calendar for time you want to cut, and use your default calendar as
+   **Invisible**.
+2. **Create one Google Calendar per identity.** For each, copy its **"Secret address in
+   iCal format"** (Calendar settings → *Integrate calendar*). The URL auto-refreshes, so
+   your data never goes stale.
+3. **Define them for Moon.** Edit [`Moon/config/categories.yaml`](Moon/config/categories.yaml)
+   — an `id`, a `display_name`, and a one-line core question per identity — and the human
+   notes in [`Moon/config/categories.md`](Moon/config/categories.md). It ships with the
+   example set above; **replace it with yours.**
+4. **Point Moon at your calendars.** Copy the template and paste your secret URLs, keyed by
+   your ids:
    ```bash
    mkdir -p Astronaut
    cp Moon/config/feeds.example.md Astronaut/rocket.md
-   # edit Astronaut/rocket.md — map each identity id to its secret iCal URL
-   # (a local .ics path also works); add `- trash_time:` and `- invisible:` lines too.
+   # edit Astronaut/rocket.md — one `- <id>: <secret iCal URL>` per identity,
+   # plus optional `- trash_time:` / `- invisible:` lines.
    ```
-   Everything under `Astronaut/` is gitignored, so your URLs and data stay on your
-   machine.
-4. **Dependencies.** Python 3.9+ and:
+   Everything under `Astronaut/` is gitignored — your URLs and data stay local.
+5. **Install and run:**
    ```bash
    pip install -r Moon/scripts/requirements.txt
+   ./Moon/scripts/moon-weekly            # most recent completed week
    ```
+   Then run the reflection and coaching playbooks in `Moon/playbooks/` with your agent (or
+   by hand).
+6. **Then just live in your calendar.** Schedule each event on the identity it's *for*, and
+   run Moon once a week. It even flags it when you rename a calendar.
 
-## Run it
-
-```bash
-# 1. Compute the most recent completed week (deterministic, no input needed)
-./Moon/scripts/moon-weekly
-#    ...or a specific week:  ./Moon/scripts/moon-weekly --week 2026-W26
-
-# 2. Reflect, then coach: run Moon/playbooks/reflection.md, then
-#    Moon/playbooks/coaching.md with your agent (or by hand)
-```
-
-Run it after a week closes — a mid-week run only sees a partial week. It writes
-`Moon/weeks/<ISO-week>/` (events, time report, reflection, coaching) and appends to
-`Moon/trends.csv`. See [`AGENTS.md`](AGENTS.md) for the full operating guide and
+See [`AGENTS.md`](AGENTS.md) for the full operating guide and
 [`Moon/README.md`](Moon/README.md) for the directory layout.
 
 ## Privacy
 
-Your private data is gitignored and never committed:
-- `Astronaut/` — your feed list (`rocket.md`, with secret URLs) and any local calendar exports.
-- `Moon/weeks/` — per-week events, reflections, and coaching notes.
-- `Moon/trends.csv` — weekly per-identity aggregates (they reveal personal patterns).
-
-Only the **product** (`Moon/` scripts, playbooks, and committed config templates) is
-tracked. Back up `Astronaut/` and `Moon/weeks/` yourself (iCloud, a private repo, etc.).
+Gitignored, never committed: `Astronaut/` (your `rocket.md` + any local calendar files),
+`Moon/weeks/` (events, reflections, coaching), and `Moon/trends.csv` (weekly aggregates).
+Only the product code, playbooks, and the *example* config are tracked. Back up
+`Astronaut/` and `Moon/weeks/` yourself (iCloud, a private repo, etc.).
 
 ## License
 

@@ -1,11 +1,17 @@
-# Categories — the eight identity accounts
+# Categories — your identity accounts
 
-Moon has **eight fixed categories**, and each one is an **identity account**: a
-person you are choosing to become, and the calendar where you deposit the hours that
-fund it. The weekly report is the statement on those accounts — an honest mirror of
-whether the time you actually scheduled went to the identities you say you care about.
+Each category is an **identity account**: a person you are choosing to become, and the
+calendar where you deposit the hours that fund it. The weekly report is the statement on
+those accounts — an honest mirror of whether the time you actually scheduled went to the
+identities you say you care about.
 
-This file is the constitution. Its machine-readable twin is
+> **Make it yours.** Everything below is the maintainer's **example** — eight identities
+> plus two diagnostic buckets (Trash time, Invisible). It is *not* a prescribed taxonomy.
+> Replace it with the identities *you* are investing in (3–8 is plenty), each its own
+> Google calendar, and adjust the buckets to whatever helps you see your week honestly.
+> Use the examples as a model for *how to think about choosing them*, not as the list.
+
+This file is the human constitution for your set. Its machine-readable twin is
 [`categories.yaml`](categories.yaml) (`id → display_name → core_question`), which the
 engine reads; your feed list (`Astronaut/rocket.md`) is keyed by the same `id`s, and the
 reports render each `display_name`. Keep all three in sync.
@@ -27,7 +33,7 @@ reports render each `display_name`. Keep all three in sync.
   `categories.yaml`, the reports, and `trends.csv` all key off them. This set is
   `identity_v1`; changing it is a breaking change (see [The contract](#the-contract)).
 
-## The eight identities
+## The eight identities (the maintainer's example)
 
 ### I support myself and family — `support_self_family`
 > *Did my hours this week secure me and the people I provide for?*

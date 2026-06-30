@@ -1,8 +1,14 @@
 # Project Moon — secrets and runtime output
 # Real calendar feed URLs (secret). The committed template is feeds.example.yaml.
 Moon/config/feeds.yaml
+# Real calendar exports: personal event data + secret calendar tokens in the filenames.
+Moon/calendar/
+# The astronaut's private mission data (calendar feeds, etc.) — never part of the public product.
+Astronaut/
 # Per-week runtime output: your event data and personal reflections.
 Moon/weeks/
+# Weekly aggregates per identity can reveal personal life patterns — keep local on a public repo.
+Moon/trends.csv
 
 # Build scaffolding — local-only (HAI-Harness; not part of the product others install).
 Agents/
@@ -12,5 +18,7 @@ Human/
 __pycache__/
 *.pyc
 
-# macOS / iCloud conflicted-copy duplicates (e.g. "README 2.md").
+# macOS noise + iCloud conflicted-copy duplicates (files like "README 2.md", dirs like "config 2").
+.DS_Store
 * 2.*
+* 2

@@ -24,14 +24,14 @@ core is Python scripts and markdown playbooks — there is no dependency on any 
   events merge into a block, and each block is rounded **up** to whole hours, then summed.
   A 25-minute and a 50-minute *builder* block that touch become one 2-hour *builder*
   block. The unit models "this identity had my head for ~N hours," not stopwatch time.
-- **The report is a mirror, not a scoreboard.** It shows all eight identities' share of
-  the week as percentages (even the ones at 0h, so neglect stays visible), plus two
-  non-identity slices: **Trash time** (energy-draining time — the goal is to *reduce* it)
-  and **Invisible (unallocated)** (chores / low-return time — fine in small amounts, but
-  *don't let it surge*). There is no "Trash" *identity* account — drift is surfaced, not
-  dressed up as something you fund. See
-  [`Moon/config/categories.md`](Moon/config/categories.md) for the eight identities, the
-  tie-breakers, and the Trash/Invisible buckets.
+- **The report is a mirror, not a scoreboard.** It shows each identity's share of the
+  week as a percentage — every identity in the user's set, even the ones at 0h, so
+  neglect stays visible. **The identity set is user-defined in `categories.yaml`; there
+  is no fixed list.** Optional non-identity slices help too — the shipped example uses
+  **Trash time** (energy-draining time, to *reduce*) and **Invisible (unallocated)**
+  (chores / low-return time — fine in small amounts, but don't let it surge). See
+  [`Moon/config/categories.md`](Moon/config/categories.md) for the example set, the
+  tie-breakers, and how a user makes it their own.
 
 ## The weekly flow
 
@@ -70,16 +70,16 @@ current set is `category_set_version: identity_v1`, a breaking change from the o
 activity categories — there is no auto-migration (a clean start).
 
 - `Moon/config/categories.yaml` — the canonical category set: a list of
-  `{id, display_name, core_question}` for the eight identities. Committed. The engine
-  reads ids and display names from here; [`categories.md`](Moon/config/categories.md) is
+  `{id, display_name, core_question}` for the user's identities (the example ships eight).
+  Committed. The engine reads ids and display names from here; [`categories.md`](Moon/config/categories.md) is
   the human constitution that must stay in sync.
 - `Moon/weeks/<ISO-week>/events.json` — array of
   `{uid, category, title, start_local, end_local, duration_min, all_day}`, where
   `category` is the identity **id** the event's feed maps to, or `trash_time` /
   `invisible` for a non-identity calendar. Week is Mon–Sun in local time.
 - `Moon/weeks/<ISO-week>/time-report.md` — frontmatter carries
-  `category_set_version: identity_v1`; the summary lists **all eight** identities (even
-  at 0h) with `display_name`, cognitive hours, and **share %**, plus **Trash time** and
+  `category_set_version: identity_v1`; the summary lists **every** identity in the set
+  (even at 0h) with `display_name`, cognitive hours, and **share %**, plus **Trash time** and
   **Invisible (unallocated)** slices. Share is each row's percentage of the week's total
   cognitive hours (identities + Trash + Invisible). Followed by the event log.
 - `Moon/weeks/<ISO-week>/reflection.md` — the saved weekly reflection.
