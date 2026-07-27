@@ -24,6 +24,14 @@ core is Python scripts and markdown playbooks — there is no dependency on any 
   events merge into a block, and each block is rounded **up** to whole hours, then summed.
   A 25-minute and a 50-minute *builder* block that touch become one 2-hour *builder*
   block. The unit models "this identity had my head for ~N hours," not stopwatch time.
+  For the non-identity **Invisible** bucket, calendar time from 12:00 a.m. up to
+  7:00 a.m. local is always removed before merge-and-ceil so ordinary sleep does not
+  inflate it. The same overnight window is removed from any timed event lasting at least
+  24 hours, so a multi-day envelope funds its identity during waking time without
+  counting the nights. Outside the Invisible bucket, overnight time is not excluded
+  merely because it falls between 12:00 a.m. and 7:00 a.m.: normal timed events shorter
+  than 24 hours count in full, so both a 1:00–2:00 a.m. event and a short event that
+  crosses midnight still count.
 - **The report is a mirror, not a scoreboard.** It shows each identity's share of the
   week as a percentage — every identity in the user's set, even the ones at 0h, so
   neglect stays visible. **The identity set is user-defined in `categories.yaml`; there
@@ -45,10 +53,12 @@ week moves through five steps:
    `events.json`. Flag any calendar whose Google name no longer matches `categories.yaml`.
 2. **Compute** — Merge-and-ceil per category to get cognitive hours; write a
    human-readable `time-report.md` and append a row per category to `trends.csv`.
-3. **Reflect** — Run the reflection playbook: bare questions answered from memory (you
-   review *last week* and plan *next week*), lightly proofread, saved to `reflection.md`.
-4. **Coach** — Run the coaching playbook: it reads the reflection against the week's
-   `time-report.md` and `events.json` and writes grounded advice to `coaching.md`.
+3. **Reflect** — Run the reflection playbook: first see the exact calculated allocation
+   and a factual calendar-title rewind, then answer the bare questions (you review *last
+   week* and plan *next week*), lightly proofread, saved to `reflection.md`.
+4. **Coach** — Run the coaching playbook as an integrated life and career coach: it reads
+   the reflection against the week's `time-report.md` and `events.json` and writes
+   grounded, prioritized advice to `coaching.md`.
 5. **Trend** — `trends.csv` accumulates across weeks as the long-term signal.
 
 Steps 1–2 are **Engine A** (deterministic Python). Steps 3–4 are **Engine B** (markdown
@@ -81,7 +91,11 @@ activity categories — there is no auto-migration (a clean start).
   `category_set_version: identity_v1`; the summary lists **every** identity in the set
   (even at 0h) with `display_name`, cognitive hours, and **share %**, plus **Trash time** and
   **Invisible (unallocated)** slices. Share is each row's percentage of the week's total
-  cognitive hours (identities + Trash + Invisible). Followed by the event log.
+  cognitive hours (identities + Trash + Invisible). Invisible segments in the local
+  `[00:00, 07:00)` window are excluded from its calculation but remain in `events.json`.
+  Timed events lasting at least 24 hours also exclude that window on every covered date;
+  their original interval remains in `events.json`, and each still counts as one source
+  event. Followed by the event log.
 - `Moon/weeks/<ISO-week>/reflection.md` — the saved weekly reflection.
 - `Moon/weeks/<ISO-week>/coaching.md` — the saved weekly coaching note.
 - `Moon/trends.csv` — long format, one row per category per week:
@@ -101,7 +115,9 @@ activity categories — there is no auto-migration (a clean start).
 - **Numbers come only from the engine.** Cognitive hours, percentages, Trash, and
   Invisible are computed by `Moon/scripts/` and locked by `Moon/scripts/test_engine.py`.
   An agent must run the scripts and report their output verbatim — never compute,
-  estimate, round, or "correct" the math by hand.
+  estimate, round, or "correct" the math by hand. The engine also owns the Invisible
+  sleep-window and multi-day overnight exclusions; an agent must never add those hours
+  back mentally.
 - **Surface calendar changes every pull.** Ingestion compares each Google calendar's own
   name (`X-WR-CALNAME`) to the identity's `display_name`; if they diverge (you renamed a
   calendar), it warns. Mirror an intended rename by editing `display_name` in
@@ -126,10 +142,11 @@ Compute is unattended; reflection and coaching need a person.
    prints a one-screen summary, and flags any calendar rename. Deterministic — same
    calendars, same numbers.
 2. **Reflect, then coach (interactive).** Open the reflection playbook
-   ([`Moon/playbooks/reflection.md`](Moon/playbooks/reflection.md)): bare questions
-   answered from memory, lightly proofread, written to `reflection.md`. Then the coaching
-   playbook ([`Moon/playbooks/coaching.md`](Moon/playbooks/coaching.md)) reads it against
-   the actual schedule and writes grounded advice to `coaching.md`.
+   ([`Moon/playbooks/reflection.md`](Moon/playbooks/reflection.md)): it shows Engine A's
+   exact time-by-identity table and a concise factual schedule rewind **before** asking
+   the bare questions, then lightly proofreads the answers and writes `reflection.md`.
+   The coaching playbook ([`Moon/playbooks/coaching.md`](Moon/playbooks/coaching.md))
+   reads it against the actual schedule and writes grounded advice to `coaching.md`.
 
 Any tool that can run a Python script and read a markdown playbook can drive the whole
 thing — there's no required assistant.

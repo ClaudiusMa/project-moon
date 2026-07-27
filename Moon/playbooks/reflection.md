@@ -13,21 +13,26 @@ reflection's *"What's your plan?"*, so each week you see plan versus reality.
 
 ## Purpose
 
-Bare questions — no prompts, no hints, no auto-fill — answered in one pass. The absence
-of scaffolding is the point: what the person recalls unaided, and what they mention
-first, reveals how intentionally they lived and what actually weighs on them. Happiness
-is a free list. *"What's your plan?"* is **carried in** from last week (not asked).
+Rewind the week before asking for reflection. First show the exact calculated time spent
+in every identity and non-identity bucket, then give a short, factual recap of what was
+on the calendar. This re-anchors the person's memory before they answer the bare
+questions in one pass. Happiness is a free list. *"What's your plan?"* is **carried in**
+from last week (not asked).
 
 ## Inputs (read-only)
 
 - **Target week** — the just-completed ISO week to review (default: most recent
-  completed week). Confirm it.
+  completed week). Resolve it before beginning and state it in the rewind.
+- **Time report** — read `Moon/weeks/<ISO-week>/time-report.md` for Engine A's exact
+  cognitive hours, share percentages, and full category list.
+- **Events** — read `Moon/weeks/<ISO-week>/events.json` for calendar titles, times, and
+  their scheduling-time identity.
 - **Previous reflection** — read only to carry its *"What do you plan to do next week?"*
   forward into this reflection's *"What's your plan?"*. If there's none, that section is
   "No plan from last week."
 
-This playbook does **not** read `events.json` and writes nothing except the reflection
-file. Keeping recall unaided is deliberate — the calendar/data view belongs to the coach.
+The report and events are **read-only**. This playbook writes nothing except the
+reflection file.
 
 ## Output
 
@@ -37,14 +42,47 @@ file. Keeping recall unaided is deliberate — the calendar/data view belongs to
 
 ## Procedure
 
-1. **Pick the week** (the completed week to review) and confirm it.
-2. **Carry the plan.** Read the previous reflection's *"What do you plan to do this
+1. **Pick the week** (the completed week to review) and state it. With no explicit week,
+   use the most recent completed ISO week; do not ask a week-selection question before
+   showing the rewind.
+2. **Read the computed week.** Read that week's `time-report.md` and `events.json`. Never
+   calculate, estimate, re-round, or correct a number yourself; all numbers must be
+   copied from Engine A's report.
+3. **Carry the plan.** Read the previous reflection's *"What do you plan to do next
    week?"* and place it in this reflection's *"What's your plan?"* (verbatim). If there's
    no prior reflection, use "No plan from last week."
-3. **Present the bare questions all at once** — exactly as written below, nothing added.
-   Show the carried plan as context. Let the person answer in one pass.
-4. **Proofread each answer** under the rule below.
-5. **Write the file** from the template and read it back.
+4. **Present the week rewind before asking anything.** Use the exact format and rules in
+   **Week rewind output** below. Finish the entire rewind before presenting intake.
+5. **Present the bare questions all at once** — exactly as written below, nothing added
+   between them. Show the carried plan as context. Let the person answer in one pass.
+6. **Proofread each answer** under the rule below.
+7. **Write the file** from the template and read it back.
+
+## Week rewind output
+
+Present this block before the six questions:
+
+1. `# Week rewind — <ISO-week>` and the report's date range.
+2. `## Time by category` followed by the report's **entire Summary table verbatim** —
+   every configured identity, including 0h rows, plus Trash, Invisible, any unexpected
+   bucket, and Total. Do not recalculate or selectively omit rows.
+3. `## What was on your calendar` followed by a concise factual recap (normally 3–7
+   bullets) made from `events.json`:
+   - Lead with the largest allocations using the report's exact hours and shares.
+   - Group calendar titles into useful memory cues by identity and/or day; mention real
+     titles, and preserve the calendar's identity assignment.
+   - Name identities at 0h and report Trash/Invisible exactly as shown, even when 0h.
+   - `events.json` retains Invisible events from 12:00 a.m.–7:00 a.m. even though Engine
+     A excludes that interval. They may be mentioned as schedule context, but never imply
+     that the excluded portion contributed to the report's Invisible hours or share.
+   - `events.json` also retains the full interval for timed events lasting at least
+     24 hours even though Engine A removes their 12:00 a.m.–7:00 a.m. windows. Never
+     imply that those excluded overnight portions contributed to an identity's hours.
+   - Describe these as **scheduled activities**, not proof that they happened.
+   - Do not coach, judge the allocation, infer intent from titles, or preview answers.
+4. `## Carried plan` followed by the prior week's plan (or "No plan from last week.").
+
+Only after this whole block is visible should the six questions appear.
 
 ## Proofreading rule
 
@@ -70,9 +108,9 @@ Agent notes (do **not** show these):
 - **Happiness** is a free list of what made them happy/proud — capture an optional 1–10
   only if they volunteer it; never ask for one.
 - **"What's your plan?"** is carried from the previous reflection's *"What do you plan to
-  do this week?"* — show it as context, never ask it fresh.
-- Keep every question **unaided** — no calendar drafts, no event lists, no hints. The
-  unprompted recall is the signal; the coach contrasts it with the schedule afterward.
+  do next week?"* — show it as context, never ask it fresh.
+- The rewind is context, not a draft response. Never pre-fill an answer from calendar
+  titles or turn the recap into coaching.
 - **"What do you plan to do next week?"** carries forward to next week's *"What's your
   plan?"*.
 
@@ -128,5 +166,10 @@ After the reflection is saved, run the **coaching playbook**
 
 ## Degraded mode
 
+- **No time report or events** — run Engine A for the target week first. Do not begin the
+  six-question intake without showing the calculated allocation and calendar rewind.
+- **No counted events** — still show the complete Summary table and say that no counted
+  calendar events were recorded for the week.
 - **No previous reflection** — *"What's your plan?"* is "No plan from last week."
-- **Reflection already exists for the week** — confirm before overwriting.
+- **Reflection already exists for the week** — show the rewind first, then confirm before
+  starting intake or overwriting it.

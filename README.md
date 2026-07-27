@@ -22,11 +22,15 @@ calendars and weekly data never leave your machine.
 - **Cognitive hours, not minutes.** Within an identity, overlapping/adjacent events merge
   into a block and round **up** to whole hours — a 45-minute focus block costs one
   cognitive hour, because the leftover isn't really reusable. The unit models attention,
-  not stopwatch time.
+  not stopwatch time. A timed event lasting at least 24 hours is treated as a multi-day
+  envelope: its local 12:00 a.m.–7:00 a.m. windows are removed so nights do not inflate
+  the identity. Short events that cross midnight still count in full.
 - **The weekly report is an honest mirror.** It shows each identity's *share* of your week
   as a percentage. An identity you say matters but funded 2% is the signal that matters.
-- **Reflection + coaching close the loop.** After the numbers, you reflect from memory,
-  then a coach reads your answers against the actual schedule and advises the week ahead.
+- **Reflection + coaching close the loop.** Before reflection intake, Moon shows the
+  exact time spent in every identity and a concise calendar-title rewind. You answer the
+  bare questions with the week fresh in mind, then a coach reads your answers against
+  the actual schedule and advises the week ahead.
 
 The goal isn't a perfect taxonomy — it's a weekly check on whether your hours are making
 your desired self real.
@@ -43,7 +47,8 @@ calendar per identity they're investing in:
 …plus two non-identity calendars they find useful: a **Trash time** calendar for
 energy-draining hours they want to *cut*, and their default calendar treated as
 **Invisible** (chores / low-return time — fine in small doses, worth watching when it
-surges).
+surges). Invisible calendar time from 12:00 a.m. up to 7:00 a.m. local is excluded so
+ordinary sleep does not inflate the bucket.
 
 A week then comes back like this *(synthetic numbers, to show the shape)*:
 

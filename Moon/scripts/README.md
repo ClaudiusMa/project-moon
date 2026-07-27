@@ -56,6 +56,14 @@ Week keys are ISO `YYYY-Www` (Monday–Sunday, local tz). Without `--week`, the
 - **Cognitive hours** round each merged block up independently and count
   cross-category overlaps in both identities, so the **Total can exceed
   wall-clock time** — that is intended.
+- **Invisible sleep-window time** from 12:00 a.m. up to 7:00 a.m. local is excluded
+  before Invisible's merge-and-ceil calculation, and the original Invisible events
+  remain in `events.json`. Cross-boundary events are clipped (for example, 6:00–8:00
+  a.m. contributes 7:00–8:00 a.m.).
+- **Multi-day timed-event nights** are also excluded: when a timed event lasts at least
+  24 hours, its local 12:00 a.m.–7:00 a.m. windows are removed before merge-and-ceil.
+  The original event remains unchanged in `events.json` and counts once; only its
+  calculation segments are split. Short events that cross midnight count in full.
 - **All-day events** are recorded in `events.json` (with `all_day: true`) but, by
   default, **excluded from cognitive hours** so a single all-day event can't swamp a
   week. Flip `ALL_DAY_POLICY` in `moon_common.py` to `"include"` to count them at

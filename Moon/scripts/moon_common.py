@@ -42,6 +42,20 @@ TRASH_DISPLAY = "Trash time"
 # can be examined in the reflection.
 SPECIAL_BUCKETS = {TRASH_ID: TRASH_DISPLAY, INVISIBLE_ID: INVISIBLE_DISPLAY}
 
+# Invisible is meant to expose unallocated waking time, not sleep. Calendar time in
+# this local daily window is retained in events.json but excluded from Invisible's
+# cognitive hours, raw minutes, event count, and share in Engine A's report/trends.
+INVISIBLE_EXCLUDED_START_HOUR = 0
+INVISIBLE_EXCLUDED_END_HOUR = 7
+
+# A timed event can be used as a multi-day envelope (for example, a weekend
+# visit). Once it lasts at least this long, Engine A removes the local overnight
+# window on every covered date before merge-and-ceil. Short events that
+# legitimately cross midnight continue to count in full.
+MULTI_DAY_EVENT_MIN_HOURS = 24
+MULTI_DAY_EXCLUDED_START_HOUR = 0
+MULTI_DAY_EXCLUDED_END_HOUR = 7
+
 # --- All-day-event policy ----------------------------------------------------
 # What to do with all-day events when computing cognitive hours. They are always
 # recorded in events.json (with `all_day: true`) so the reflection recap still

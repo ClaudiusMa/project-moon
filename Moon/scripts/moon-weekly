@@ -49,7 +49,8 @@ def main(argv=None):
     print()
     print(f"Report: {report}")
     print(f"Next — weekly reflection ritual: {playbook}")
-    print("  Open it with your agent to run the 6-question reflection for this week.")
+    print("  Open it with your agent to see your calculated time and week rewind,")
+    print("  then run the 6-question reflection.")
 
 
 if __name__ == "__main__":
