@@ -5,13 +5,16 @@ Consume `Moon/weeks/<ISO-week>/events.json`. Per identity (category id): merge
 overlapping/adjacent events into blocks, round each block UP to whole hours,
 then sum. Everything counts (no minimum-duration floor); cross-category
 overlaps count in both identities because merging is per-category. All-day
-events are handled per `moon_common.ALL_DAY_POLICY`.
+events are handled per `moon_common.ALL_DAY_POLICY`. For the Invisible bucket,
+the local `[00:00, 07:00)` sleep window is removed before merge-and-ceil. The
+same overnight window is removed from timed events lasting at least 24 hours,
+so multi-day envelopes do not count their nights.
 
-The report lists all eight identities (including those at 0 hours) plus an
-"Invisible (unallocated)" slice for time on non-identity calendars, so the week
-reads as an honest mirror. Percentages are share of the week's total cognitive
-hours (identities + invisible). Writes `time-report.md` (Obsidian-friendly) and
-upserts the week's rows into `Moon/trends.csv`. Pure stdlib.
+The report lists every configured identity (including those at 0 hours) plus
+Trash and "Invisible (unallocated)" slices, so the week reads as an honest
+mirror. Percentages are share of the week's total cognitive hours. Writes
+`time-report.md` (Obsidian-friendly) and upserts the week's rows into
+`Moon/trends.csv`. Pure stdlib.
 """
 from __future__ import annotations
 
@@ -20,7 +23,7 @@ import csv
 import json
 import math
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -38,6 +41,93 @@ def _counted(events):
     if mc.ALL_DAY_POLICY == "exclude":
         return [e for e in events if not e.get("all_day")]
     return events
+
+
+def _exclude_daily_window(event, start_hour, end_hour):
+    """Return countable copies of one event after removing a local daily window.
+
+    The source event is never mutated. A cross-window event may become two segments;
+    `removed_minutes` records the exact scheduled duration removed before merge/ceil.
+    This is intentionally interval math rather than title parsing: the rule applies to
+    every event in the bucket, whatever it is called.
+    """
+    start = datetime.fromisoformat(event["start_local"])
+    end = datetime.fromisoformat(event["end_local"])
+    if end <= start:
+        return [], 0
+
+    segments = [(start, end)]
+    removed_minutes = 0.0
+    day = start.date()
+    final_day = (end - timedelta(microseconds=1)).date()
+    while day <= final_day:
+        window_start = datetime.combine(day, time(start_hour), tzinfo=start.tzinfo)
+        window_end = datetime.combine(day, time(end_hour), tzinfo=start.tzinfo)
+        remaining = []
+        for seg_start, seg_end in segments:
+            overlap_start = max(seg_start, window_start)
+            overlap_end = min(seg_end, window_end)
+            if overlap_start < overlap_end:
+                removed_minutes += (overlap_end - overlap_start).total_seconds() / 60.0
+                if seg_start < window_start:
+                    remaining.append((seg_start, window_start))
+                if seg_end > window_end:
+                    remaining.append((window_end, seg_end))
+            else:
+                remaining.append((seg_start, seg_end))
+        segments = remaining
+        day += timedelta(days=1)
+
+    clipped = []
+    for seg_start, seg_end in segments:
+        copy = dict(event)
+        copy["start_local"] = seg_start.isoformat()
+        copy["end_local"] = seg_end.isoformat()
+        copy["duration_min"] = int(round((seg_end - seg_start).total_seconds() / 60.0))
+        clipped.append(copy)
+    return clipped, int(round(removed_minutes))
+
+
+def _prepare_category_events(events, category):
+    """Apply counting policies and return calculation events plus diagnostics.
+
+    Returns `(segments, source_event_count, all_day_excluded,
+    invisible_window_minutes_excluded, multi_day_window_minutes_excluded)`.
+    Segment splitting never inflates `source_event_count` in reports or trends.
+    """
+    counted = _counted(events)
+    all_day_excluded = len(events) - len(counted)
+
+    segments, source_event_count = [], 0
+    for event in counted:
+        start = datetime.fromisoformat(event["start_local"])
+        end = datetime.fromisoformat(event["end_local"])
+        is_multi_day_envelope = (
+            end - start >= timedelta(hours=mc.MULTI_DAY_EVENT_MIN_HOURS)
+        )
+        if category == mc.INVISIBLE_ID:
+            kept, _removed = _exclude_daily_window(
+                event,
+                mc.INVISIBLE_EXCLUDED_START_HOUR,
+                mc.INVISIBLE_EXCLUDED_END_HOUR,
+            )
+        elif is_multi_day_envelope:
+            kept, _removed = _exclude_daily_window(
+                event,
+                mc.MULTI_DAY_EXCLUDED_START_HOUR,
+                mc.MULTI_DAY_EXCLUDED_END_HOUR,
+            )
+        else:
+            kept = [event]
+        if kept:
+            source_event_count += 1
+            segments.extend(kept)
+    original_raw_minutes = compute_category(counted)[1] if counted else 0
+    kept_raw_minutes = compute_category(segments)[1] if segments else 0
+    window_minutes_excluded = original_raw_minutes - kept_raw_minutes
+    if category == mc.INVISIBLE_ID:
+        return segments, source_event_count, all_day_excluded, window_minutes_excluded, 0
+    return segments, source_event_count, all_day_excluded, 0, window_minutes_excluded
 
 
 def compute_category(events):
@@ -88,7 +178,9 @@ def _pct(part, total) -> int:
     return round(100 * part / total) if total else 0
 
 
-def render_report(week_key, year, week, id_rows, extra_rows, counted_by_cat, cats, n_excluded) -> str:
+def render_report(week_key, year, week, id_rows, extra_rows, counted_by_cat, cats,
+                  n_excluded, invisible_window_excluded_minutes,
+                  multi_day_window_excluded_minutes) -> str:
     monday = date.fromisocalendar(year, week, 1)
     sunday = monday + timedelta(days=6)
     rows = id_rows + extra_rows
@@ -115,8 +207,11 @@ def render_report(week_key, year, week, id_rows, extra_rows, counted_by_cat, cat
          "counts (no minimum-duration floor); a cross-category overlap counts in both. "
          "**Share** is each row's percentage of the week's total cognitive hours, including "
          "the **Invisible** slice — time on calendars that aren't an identity (your "
-         "primary/Trash calendars). All eight identities are listed even at 0h, so an "
-         "underfunded identity stays visible."),
+         "primary/Trash calendars). Invisible calendar time from **12:00 a.m.–7:00 a.m. "
+         "local** is excluded so sleep hours do not inflate it. The same overnight window "
+         "is removed from timed events lasting **24 hours or more**, so multi-day event "
+         "envelopes do not count their nights. All eight identities are listed even at 0h, "
+         "so an underfunded identity stays visible."),
         "",
         "## Summary",
         "",
@@ -134,6 +229,15 @@ def render_report(week_key, year, week, id_rows, extra_rows, counted_by_cat, cat
         "",
         ("> Total cognitive hours can exceed wall-clock time: cross-category overlaps are "
          "counted in every identity they touch, and each block rounds up independently."),
+        "",
+        (f"> Invisible sleep-window rule: **12:00 a.m.–7:00 a.m. local** does not count "
+         f"toward Invisible. **{mc.fmt_hm(invisible_window_excluded_minutes)}** was "
+         f"excluded this week; original events remain in `events.json`."),
+        "",
+        (f"> Multi-day timed-event rule: for events lasting **24 hours or more**, "
+         f"**12:00 a.m.–7:00 a.m. local** is removed on every covered date. "
+         f"**{mc.fmt_hm(multi_day_window_excluded_minutes)}** was excluded this week; "
+         f"each source event remains unchanged in `events.json` and counts as one event."),
     ]
     if n_excluded:
         L += [
@@ -211,37 +315,46 @@ def run(week_key=None, today=None, verbose=True):
         by_cat.setdefault(e["category"], []).append(e)
 
     counted_by_cat, n_excluded = {}, 0
+    invisible_window_excluded_minutes, multi_day_window_excluded_minutes = 0, 0
 
     # all eight identities in canonical order, including zero-hour ones
     id_rows = []
     for cat in cats.ids:
         evs = by_cat.get(cat, [])
-        counted = _counted(evs)
-        n_excluded += len(evs) - len(counted)
+        counted, event_count, all_day_excluded, invisible_excluded, multi_day_excluded = \
+            _prepare_category_events(evs, cat)
+        n_excluded += all_day_excluded
+        invisible_window_excluded_minutes += invisible_excluded
+        multi_day_window_excluded_minutes += multi_day_excluded
         counted_by_cat[cat] = counted
         ch, rm = compute_category(counted) if counted else (0, 0)
-        id_rows.append((cat, ch, rm, len(counted)))
+        id_rows.append((cat, ch, rm, event_count))
 
-    # diagnostic / non-identity rows. Trash time is always shown (even 0h) so it's
-    # confronted in reflection; invisible and any stragglers show only when present.
+    # Diagnostic / non-identity rows. Trash and Invisible are always shown (even 0h)
+    # so the weekly mirror is complete; unexpected stragglers show only when present.
     extra_rows = []
-    specials = [c for c in mc.SPECIAL_BUCKETS if c in by_cat or c == mc.TRASH_ID]
+    specials = list(mc.SPECIAL_BUCKETS)
     others = sorted(c for c in by_cat if c not in cats and c not in mc.SPECIAL_BUCKETS)
     for cat in specials + others:
         evs = by_cat.get(cat, [])
-        counted = _counted(evs)
-        n_excluded += len(evs) - len(counted)
-        if not counted and cat != mc.TRASH_ID:
+        counted, event_count, all_day_excluded, invisible_excluded, multi_day_excluded = \
+            _prepare_category_events(evs, cat)
+        n_excluded += all_day_excluded
+        invisible_window_excluded_minutes += invisible_excluded
+        multi_day_window_excluded_minutes += multi_day_excluded
+        if not counted and cat not in mc.SPECIAL_BUCKETS:
             continue
         counted_by_cat[cat] = counted
         ch, rm = compute_category(counted) if counted else (0, 0)
-        extra_rows.append((cat, ch, rm, len(counted)))
+        extra_rows.append((cat, ch, rm, event_count))
 
     rows = id_rows + extra_rows
 
     report_path = week_dir / "time-report.md"
     report_path.write_text(render_report(week_key, year, week, id_rows, extra_rows,
-                                          counted_by_cat, cats, n_excluded))
+                                          counted_by_cat, cats, n_excluded,
+                                          invisible_window_excluded_minutes,
+                                          multi_day_window_excluded_minutes))
     update_trends(week_key, rows, cats.version, cats)
 
     if verbose:
@@ -252,6 +365,12 @@ def run(week_key=None, today=None, verbose=True):
             print(f"  {ch:>3} h  {_pct(ch, total_ch):>3}%  {label}  ({n} ev, raw {mc.fmt_hm(rm)})")
         if n_excluded:
             print(f"  ({n_excluded} all-day event(s) excluded from cognitive hours)")
+        if invisible_window_excluded_minutes:
+            print("  " + mc.fmt_hm(invisible_window_excluded_minutes) +
+                  " of Invisible time excluded (12:00 a.m.–7:00 a.m. local)")
+        if multi_day_window_excluded_minutes:
+            print("  " + mc.fmt_hm(multi_day_window_excluded_minutes) +
+                  " of multi-day event time excluded (12:00 a.m.–7:00 a.m. local)")
         for w in _daily_sanity_warnings(counted_by_cat, cats):
             print(f"  WARNING: {w}")
         print(f"Wrote {report_path}")

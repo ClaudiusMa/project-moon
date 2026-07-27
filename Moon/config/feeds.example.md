@@ -29,6 +29,8 @@ are skipped.
 
 Calendars that are NOT an identity — your everyday/primary calendar, a "Trash" calendar,
 etc. Their time appears as an **"Invisible (unallocated)"** slice in the weekly report, so
-drift is visible without being dressed up as an identity. Optional; add one line per calendar.
+drift is visible without being dressed up as an identity. Invisible calendar time from
+12:00 a.m. up to 7:00 a.m. local is excluded from the calculation so sleep does not
+inflate it. Optional; add one line per calendar.
 
 - invisible: <secret iCal URL or local .ics path>

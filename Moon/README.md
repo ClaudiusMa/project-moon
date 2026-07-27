@@ -43,9 +43,9 @@ project-moon/
   `categories.yaml` (a rename you may want to mirror). No LLM, no tool-specific
   dependency — same calendars always yield the same numbers. `test_engine.py` locks the math.
 - **Engine B — `playbooks/` (markdown rituals).** Human-in-the-loop flows an agentic
-  tool reads and follows: `reflection.md` (bare weekly questions, answered from memory)
-  then `coaching.md` (grounded advice against the actual schedule; learns from your
-  feedback over time).
+  tool reads and follows: `reflection.md` (exact computed allocation + factual schedule
+  rewind, then bare weekly questions) followed by `coaching.md` (grounded advice against
+  the actual schedule; learns from your feedback over time).
 
 The engines communicate only through the data contracts (next section).
 
@@ -71,6 +71,13 @@ Fixed shapes shared between the engines. Change them deliberately, keeping the r
 - **Cognitive hours:** within an identity, merge overlapping/adjacent events into a
   block, round each block **up** to whole hours, then sum. Everything counts (no
   minimum-duration floor). A cross-identity overlap counts in both identities.
+- **Invisible sleep window:** for `invisible` only, the local interval from 12:00 a.m.
+  up to 7:00 a.m. (`[00:00, 07:00)`) is removed before merge-and-ceil. A 6:00–8:00 a.m.
+  event contributes only 7:00–8:00 a.m. The original event stays in `events.json`.
+- **Multi-day timed events:** when a timed event lasts at least 24 hours, the local
+  `[00:00, 07:00)` window is removed on every covered date before merge-and-ceil. The
+  original interval stays in `events.json`, the split calculation segments do not
+  increase its event count, and short events that cross midnight still count in full.
 - **Identity source:** an event's identity is the calendar (feed `id`) it lives on,
   chosen when you scheduled it — never its title. One Google calendar per identity.
   See [`config/categories.md`](config/categories.md).

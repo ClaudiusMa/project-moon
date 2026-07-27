@@ -181,7 +181,9 @@ because what *doesn't* fund an identity is worth seeing:
   even at 0h, precisely so you confront it and **reduce** it. Lower is better.
 - **Invisible (unallocated)** (`invisible`) — chores, errands, admin, and low-return time
   with no clear purpose or payoff. Some is unavoidable and fine; the signal is **don't let
-  it surge** — when it climbs, it's crowding out the identities you care about.
+  it surge** — when it climbs, it's crowding out the identities you care about. Calendar
+  time from 12:00 a.m. up to 7:00 a.m. local is excluded from this bucket's calculations
+  so ordinary sleep does not appear as Invisible; source events remain in `events.json`.
 
 Both are diagnostic, not identities: no core question, not in `categories.yaml`, each on
 its own calendar (mapped via `trash_time:` / `invisible:` in `rocket.md`). Deeper honesty
