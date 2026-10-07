@@ -45,7 +45,13 @@ reflection file.
 1. **Pick the week** (the completed week to review) and state it. With no explicit week,
    use the most recent completed ISO week; do not ask a week-selection question before
    showing the rewind.
-2. **Read the computed week.** Read that week's `time-report.md` and `events.json`. Never
+2. **Verify the calendars before reading the computed week.** Run
+   `./Moon/scripts/moon-weekly --week <ISO-week>` from the product workspace, then
+   `./Moon/scripts/moon-weekly --week <ISO-week> --check-coverage`. Continue only if
+   both succeed. A missing calendar is missing data, never 0h. Do not automatically
+   run `--confirm-sources` to bypass a failure: restore the source list or obtain the
+   user's explicit confirmation of an intentional setup/change. Once verified,
+   **read the computed week.** Read that week's `time-report.md` and `events.json`. Never
    calculate, estimate, re-round, or correct a number yourself; all numbers must be
    copied from Engine A's report.
 3. **Carry the plan.** Read the previous reflection's *"What do you plan to do next
@@ -65,7 +71,9 @@ Present this block before the six questions:
 1. `# Week rewind — <ISO-week>` and the report's date range.
 2. `## Time by category` followed by the report's **entire Summary table verbatim** —
    every configured identity, including 0h rows, plus Trash, Invisible, any unexpected
-   bucket, and Total. Do not recalculate or selectively omit rows.
+   bucket, and Total. Do not recalculate or selectively omit rows. If the coverage
+   section says an optional bucket is not enabled, state that it was not measured;
+   its summary 0h does not establish that no such time occurred.
 3. `## What was on your calendar` followed by a concise factual recap (normally 3–7
    bullets) made from `events.json`:
    - Lead with the largest allocations using the report's exact hours and shares.
@@ -166,6 +174,9 @@ After the reflection is saved, run the **coaching playbook**
 
 ## Degraded mode
 
+- **Missing or stale coverage** — stop the review and resolve the feed problem. A
+  standalone engine/sample report is unverified; historical reports need a fresh pull
+  before a new review. Existing personal reflections and coaching remain untouched.
 - **No time report or events** — run Engine A for the target week first. Do not begin the
   six-question intake without showing the calculated allocation and calendar rewind.
 - **No counted events** — still show the complete Summary table and say that no counted

@@ -25,12 +25,25 @@ are skipped.
 - loyal_friend: <secret iCal URL or local .ics path>
 - grateful_son: <secret iCal URL or local .ics path>
 
+## Trash time (optional)
+
+Energy-draining time you want to reduce goes on its own calendar and stays a separate
+Trash time slice in the report. It is not Invisible time.
+
+- trash_time: <secret iCal URL or local .ics path>
+
 ## Invisible (unallocated)
 
-Calendars that are NOT an identity — your everyday/primary calendar, a "Trash" calendar,
-etc. Their time appears as an **"Invisible (unallocated)"** slice in the weekly report, so
+Non-identity calendars for unallocated time — your everyday/primary calendar,
+chores or other low-return time. Their time appears as an **"Invisible (unallocated)"** slice in the weekly report, so
 drift is visible without being dressed up as an identity. Invisible calendar time from
 12:00 a.m. up to 7:00 a.m. local is excluded from the calculation so sleep does not
 inflate it. Optional; add one line per calendar.
 
 - invisible: <secret iCal URL or local .ics path>
+
+After filling in all identity feeds and choosing any optional Trash/Invisible sources,
+confirm the complete list with the user and run `./Moon/scripts/moon-weekly --confirm-sources`.
+This creates a private expected source-count file without URLs. Never run confirmation
+as an automatic remedy for missing feeds; restore them first unless the user intended
+that source-list change.

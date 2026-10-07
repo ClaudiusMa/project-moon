@@ -100,6 +100,11 @@ activity categories — there is no auto-migration (a clean start).
 - `Moon/weeks/<ISO-week>/coaching.md` — the saved weekly coaching note.
 - `Moon/trends.csv` — long format, one row per category per week:
   `week_iso, category_set_version, category_id, cognitive_hours, raw_minutes, event_count`.
+- `Astronaut/expected-calendars.json` — private expected source counts by category ID,
+  including enabled optional calendars. No URLs; changes require deliberate confirmation.
+- `Moon/weeks/<ISO-week>/coverage.json` — private evidence of successful retrieval,
+  per-source event counts, and fingerprints of the source configuration, category set,
+  events and report. Checked before review; does not change events/trends schemas.
 - `Astronaut/rocket.md` — your private feed list: bullet lines `- <id>: <secret iCal URL
   or local .ics path>` for the eight identity ids, plus optional `- trash_time: <…>`,
   `- invisible: <…>`, and `- timezone: <IANA>` lines. Lives in the gitignored
@@ -118,6 +123,15 @@ activity categories — there is no auto-migration (a clean start).
   estimate, round, or "correct" the math by hand. The engine also owns the Invisible
   sleep-window and multi-day overnight exclusions; an agent must never add those hours
   back mentally.
+- **Verify complete source coverage before a review.** Run `./Moon/scripts/moon-weekly
+  --week <ISO-week>` and then the same command with `--check-coverage` before showing
+  the allocation or starting reflection/coaching. Missing sources or failed retrieval
+  must stop the review; never interpret them as 0h. Expected source IDs/counts live in
+  private `Astronaut/expected-calendars.json`, registered deliberately with
+  `moon-weekly --confirm-sources` only after the user confirms the complete calendar
+  list, including any Trash/Invisible sources. Never auto-confirm to bypass an error.
+  Successful pulls save private `coverage.json`, tied to the events, report, and source
+  configuration. Standalone fixture calculations are labelled unverified.
 - **Surface calendar changes every pull.** Ingestion compares each Google calendar's own
   name (`X-WR-CALNAME`) to the identity's `display_name`; if they diverge (you renamed a
   calendar), it warns. Mirror an intended rename by editing `display_name` in

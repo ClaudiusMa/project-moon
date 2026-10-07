@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import moon_common as mc
 import ingest
 import engine
+import coverage
 
 
 def main(argv=None):
@@ -28,7 +29,15 @@ def main(argv=None):
     ap.add_argument("--ics", action="append", metavar="ID=PATH",
                     help="add/override a feed (identity id = local .ics path or URL), repeatable")
     ap.add_argument("--timezone", help="IANA tz override")
+    ap.add_argument("--confirm-sources", action="store_true", help="register complete source IDs/counts after user confirmation; does not compute")
+    ap.add_argument("--check-coverage", action="store_true", help="read-only verification of existing weekly report against current feeds")
     args = ap.parse_args(argv)
+    items, cfg_tz = ingest.configured_sources(args.feeds, ingest.parse_ics_overrides(args.ics))
+    _, tz_label = mc.resolve_tz(args.timezone or cfg_tz)
+    if args.confirm_sources:
+        coverage.validate(items, confirm=True)
+        print("Registered expected calendars: " + str(coverage.counts(items)))
+        return
 
     if args.week:
         year, week = mc.parse_week_key(args.week)
@@ -36,13 +45,19 @@ def main(argv=None):
         _, year, week = mc.most_recent_completed_week(date.today())
     week_key = f"{year}-W{week:02d}"
 
+    if args.check_coverage:
+        if not coverage.read_valid(week_key, items, require_report=True, tz_label=tz_label):
+            raise SystemExit("Calendar coverage missing or stale. Run moon-weekly --week " + week_key + " before reviewing.")
+        print("Verified calendar coverage for " + week_key)
+        return
+    coverage.validate(items)
     print(f"== Moon weekly · {week_key} ==")
     print("[1/2] Ingesting calendars ...")
     ingest.run(week_key=week_key, feeds_path=args.feeds,
                ics_overrides=ingest.parse_ics_overrides(args.ics),
                tz_name=args.timezone)
     print("[2/2] Computing cognitive hours ...")
-    engine.run(week_key=week_key)
+    engine.run(week_key=week_key, source_items=items, tz_name=tz_label)
 
     report = mc.WEEKS_DIR / week_key / "time-report.md"
     playbook = mc.MOON_DIR / "playbooks" / "reflection.md"
