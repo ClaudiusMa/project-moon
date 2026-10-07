@@ -55,7 +55,7 @@ week moves through five steps:
    human-readable `time-report.md` and append a row per category to `trends.csv`.
 3. **Reflect** — Run the reflection playbook: first see the exact calculated allocation
    and a factual calendar-title rewind, then answer the bare questions (you review *last
-   week* and plan *next week*), lightly proofread, saved to `reflection.md`.
+   week* and plan *this week*), lightly proofread, saved to `reflection.md`.
 4. **Coach** — Run the coaching playbook as an integrated life and career coach: it reads
    the reflection against the week's `time-report.md` and `events.json` and writes
    grounded, prioritized advice to `coaching.md`.

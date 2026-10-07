@@ -28,7 +28,7 @@ identities:
     display_name: I'm a builder
     core_question: Did I make something real — ship, not just plan?
   - id: reliable_man
-    display_name: I am a helpful man
+    display_name: I am a reliable man
     core_question: Did I keep my word and stay on top of what I own?
   - id: exceptional_people
     display_name: I am surrounded by exceptional people

@@ -136,7 +136,7 @@ schedule is making sustainable or unsustainable without pathologizing the person
 <One integrated diagnosis: the choice, bottleneck, or avoidance pattern that matters
 most next week. Clearly separate observed fact from interpretation.>
 
-## Commitments for next week
+## Commitments for this week
 
 1. **Career bet —** <why; exact calendar action; done condition>
 2. **Life anchor —** <why; exact calendar action; done condition>
@@ -163,6 +163,12 @@ next session reflects it. Keep entries short and dated; let them accumulate.
 - 2026-07-21 — Coach as an integrated **life coach and career coach**. Protect sleep and
   necessary recovery; do not optimize the person into burnout. Invisible time from
   12:00 a.m.–7:00 a.m. local is excluded by Engine A.
+- 2026-09-23 — The review happens during the current week, so the forward question
+  and the commitments are for **this week**, not “next week.” When overwhelmed, the
+  person’s own rule is to cut down to the one most important task and finish it.
+- 2026-09-30 — The calendar had been a record of what already happened. The practice
+  now is to schedule the task first and then do it. A logged block is not proof it
+  was planned ahead.
 
 ## Degraded mode
 

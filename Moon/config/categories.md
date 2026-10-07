@@ -77,7 +77,7 @@ shipping.
 chiefly to earn (*support myself and family*). Same keyboard, different intent — sort
 by why it is on the calendar.
 
-### I am a helpful man — `reliable_man`
+### I am a reliable man — `reliable_man`
 > *Did I keep my word and stay on top of what I own?*
 
 **The account.** The dependable one. The unglamorous follow-through that makes you
@@ -157,7 +157,7 @@ on the calendar. Worked tie-breakers:
   is purely to advance your livelihood → *support myself and family*.
 - **Sailing (or any workout that is not only a workout).** The point is training and
   health → *superman*. The point is the friend you are sailing with → *loyal friend*.
-- **Chores and admin.** Routine responsibility and follow-through → *helpful man*. A
+- **Chores and admin.** Routine responsibility and follow-through → *reliable man*. A
   "chore" that is actually a paid gig → *support myself and family*.
 - **Career networking.** To stand near excellence → *exceptional people*. To grow
   income and security → *support myself and family*. To be loyal to a friend → *loyal

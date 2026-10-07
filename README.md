@@ -42,7 +42,7 @@ calendar per identity they're investing in:
 
 > *I support myself and family · I'm a builder · I am a designer with exceptional taste ·
 > I am surrounded by exceptional people · I am a superman · I am a loyal friend · I am a
-> grateful son · I am a helpful man*
+> grateful son · I am a reliable man*
 
 …plus two non-identity calendars they find useful: a **Trash time** calendar for
 energy-draining hours they want to *cut*, and their default calendar treated as
@@ -60,7 +60,7 @@ A week then comes back like this *(synthetic numbers, to show the shape)*:
 | I am a loyal friend | 5 | 14% |
 | I am surrounded by exceptional people | 3 | 8% |
 | I am a designer with exceptional taste | 2 | 6% |
-| I am a helpful man | 1 | 3% |
+| I am a reliable man | 1 | 3% |
 | I am a grateful son | 0 | 0% |
 | _Trash time_ | 1 | 3% |
 | _Invisible (unallocated)_ | 3 | 8% |

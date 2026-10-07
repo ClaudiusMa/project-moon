@@ -8,7 +8,7 @@ a short guided reflection and save it as the week's `reflection.md`. It is
 
 The review is done the **following week**, looking back at the week that just closed —
 so the framing is "last week." The review also sets the plan for the week ahead, which
-carries forward: this reflection's *"What do you plan to do next week?"* becomes the next
+carries forward: this reflection's *"What do you plan to do this week?"* becomes the next
 reflection's *"What's your plan?"*, so each week you see plan versus reality.
 
 ## Purpose
@@ -27,7 +27,7 @@ from last week (not asked).
   cognitive hours, share percentages, and full category list.
 - **Events** — read `Moon/weeks/<ISO-week>/events.json` for calendar titles, times, and
   their scheduling-time identity.
-- **Previous reflection** — read only to carry its *"What do you plan to do next week?"*
+- **Previous reflection** — read only to carry its *"What do you plan to do this week?"*
   forward into this reflection's *"What's your plan?"*. If there's none, that section is
   "No plan from last week."
 
@@ -99,7 +99,7 @@ drafts. (*"What's your plan?"* is not here — it is carried in from last week.)
 1. Happiness
 2. What did you do last week?
 3. How did it go?
-4. What do you plan to do next week?
+4. What do you plan to do this week?
 5. What might stress you up?
 6. Future-self: would I do anything differently?
 
@@ -108,10 +108,10 @@ Agent notes (do **not** show these):
 - **Happiness** is a free list of what made them happy/proud — capture an optional 1–10
   only if they volunteer it; never ask for one.
 - **"What's your plan?"** is carried from the previous reflection's *"What do you plan to
-  do next week?"* — show it as context, never ask it fresh.
+  do this week?"* — show it as context, never ask it fresh.
 - The rewind is context, not a draft response. Never pre-fill an answer from calendar
   titles or turn the recap into coaching.
-- **"What do you plan to do next week?"** carries forward to next week's *"What's your
+- **"What do you plan to do this week?"** carries forward to next week's *"What's your
   plan?"*.
 
 ## Output template
@@ -135,7 +135,7 @@ happiness: <n/10>           # optional; omit if not given
 
 ## What's your plan?
 
-<carried from last week's "What do you plan to do next week?"; "No plan from last week." if none>
+<carried from last week's "What do you plan to do this week?"; "No plan from last week." if none>
 
 ## What did you do last week?
 
@@ -145,7 +145,7 @@ happiness: <n/10>           # optional; omit if not given
 
 <proofread answer>
 
-## What do you plan to do next week?
+## What do you plan to do this week?
 
 <proofread answer — carries to next week's "What's your plan?">
 
