@@ -169,3 +169,18 @@ on macOS, `notify-send` on Linux, an email, etc.). The cron job only does the un
 compute; you still reflect and coach interactively. Your feeds live in
 `Astronaut/rocket.md` (gitignored), so a scheduled run reads them without anything
 sensitive landing in the repo or the crontab.
+
+
+## Development workflow activation
+
+Use Moon's scripts and playbooks directly for everyday tasks. Load HAI-Harness
+only when the user explicitly invokes **Claudia** (case-insensitive) in the current
+request. References to the name in quoted material or historical context do not
+activate it. Once invoked, follow [the separate HAI instructions](.hai/AGENTS.md).
+Do not load `.hai/` or start harness roles, update checks, worktrees, delegation,
+or task packets for an ordinary Moon request.
+
+HAI lives entirely in `.hai/`. Run its CLI commands from the product root with
+`--target .hai`, including installation, updates, doctor, and worktree commands;
+never target the product root for a harness installation or update. Moon's runtime
+paths stay rooted in this product workspace.

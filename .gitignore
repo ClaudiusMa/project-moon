@@ -11,8 +11,7 @@ Moon/weeks/
 Moon/trends.csv
 
 # Build scaffolding — local-only (HAI-Harness; not part of the product others install).
-Agents/
-Human/
+.hai/
 
 # Python bytecode (the scripts generate this at runtime).
 __pycache__/
