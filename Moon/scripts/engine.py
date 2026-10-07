@@ -28,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import moon_common as mc
+import coverage
 
 TRENDS_HEADER = [
     "week_iso", "category_set_version", "category_id",
@@ -296,7 +297,7 @@ def update_trends(week_key, rows, version, cats):
         w.writerows(kept)
 
 
-def run(week_key=None, today=None, verbose=True):
+def run(week_key=None, today=None, verbose=True, source_items=None, tz_name=None):
     cats = mc.get_categories()
     if week_key:
         year, week = mc.parse_week_key(week_key)
@@ -351,11 +352,34 @@ def run(week_key=None, today=None, verbose=True):
     rows = id_rows + extra_rows
 
     report_path = week_dir / "time-report.md"
-    report_path.write_text(render_report(week_key, year, week, id_rows, extra_rows,
+    if source_items is None:
+        import ingest
+        source_items, cfg_tz = ingest.configured_sources()
+        tz_name = tz_name or cfg_tz
+    _, tz_label = mc.resolve_tz(tz_name)
+    try:
+        evidence = coverage.read_valid(week_key, source_items, tz_label=tz_label)
+    except SystemExit:
+        evidence = None
+    report_text = render_report(week_key, year, week, id_rows, extra_rows,
                                           counted_by_cat, cats, n_excluded,
                                           invisible_window_excluded_minutes,
-                                          multi_day_window_excluded_minutes))
+                                          multi_day_window_excluded_minutes)
+    status = "verified" if evidence else "unverified — do not use for weekly review"
+    report_text = report_text.replace("generator: moon engine-a", "calendar_coverage: " + status + "\ngenerator: moon engine-a")
+    section = "## Calendar coverage\n\n" + status + "\n\n"
+    if evidence:
+        section += "| Calendar | Retrieval | Events |\n| --- | --- | ---: |\n"
+        for source in evidence["sources"]:
+            section += f"| {source['category']} | {source['status']} | {source['event_count']} |\n"
+        inactive = set(mc.SPECIAL_BUCKETS) - {source["category"] for source in evidence["sources"]}
+        for cid in sorted(inactive):
+            section += f"| {cid} | not enabled (not measured) | — |\n"
+        section += "\n"
+    report_path.write_text(report_text.replace("## Summary", section + "## Summary", 1))
     update_trends(week_key, rows, cats.version, cats)
+    if evidence:
+        coverage.finish_report(week_key, report_path, evidence)
 
     if verbose:
         total_ch = sum(r[1] for r in rows)

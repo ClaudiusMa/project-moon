@@ -25,6 +25,7 @@ from urllib.request import urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import moon_common as mc
+import coverage
 
 
 def _require_ical():
@@ -64,6 +65,13 @@ def expand_feed(category, src, week_start, week_end, tz):
     import recurring_ical_events
 
     cal = icalendar.Calendar.from_ical(_load_ics_bytes(src))
+    if getattr(cal, "name", None) != "VCALENDAR" or getattr(cal, "errors", []):
+        raise ValueError("Invalid calendar response")
+    for component in cal.walk():
+        if getattr(component, "errors", []):
+            raise ValueError("Invalid calendar component")
+        if component.name == "VEVENT" and component.get("DTSTART") is None:
+            raise ValueError("Event missing DTSTART")
     calname = str(cal.get("X-WR-CALNAME", "")).strip()
     occurrences = recurring_ical_events.of(cal).between(week_start, week_end)
 
@@ -115,8 +123,22 @@ def parse_ics_overrides(items):
     return out
 
 
+def configured_sources(feeds_path=None, ics_overrides=None):
+    feeds, invisible_srcs, cfg_tz = {}, [], None
+    path = mc.resolve_feeds_path(feeds_path)
+    if path.exists():
+        cfg = mc.load_feeds(path)
+        cfg_tz = cfg.get("timezone")
+        feeds.update(cfg.get("feeds", {}))
+        invisible_srcs = list(cfg.get("invisible", []) or [])
+    feeds.update(ics_overrides or {})
+    items = list(feeds.items()) + [(mc.INVISIBLE_ID, src) for src in invisible_srcs]
+    items = [(cid, src) for cid, src in items if src and not src.startswith("<")]
+    return items, cfg_tz
+
+
 def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
-        today=None, verbose=True):
+        today=None, verbose=True, verified=True):
     _require_ical()
 
     # resolve the week
@@ -126,20 +148,11 @@ def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
         _, year, week = mc.most_recent_completed_week(today or date.today())
     week_key = f"{year}-W{week:02d}"
 
-    # build feed map + invisible sources: config file first, then explicit overrides
-    feeds, invisible_srcs, cfg_tz = {}, [], None
-    feeds_path = mc.resolve_feeds_path(feeds_path)
-    if feeds_path.exists():
-        cfg = mc.load_feeds(feeds_path)
-        cfg_tz = cfg.get("timezone")
-        feeds.update(cfg.get("feeds", {}))
-        invisible_srcs = list(cfg.get("invisible", []) or [])
-    feeds.update(ics_overrides or {})
-    if not feeds and not invisible_srcs:
-        raise SystemExit(
-            "No feeds configured. Provide a feed file (Astronaut/rocket.md), "
-            f"--feeds <path>, or --ics ID=PATH (looked for {feeds_path})."
-        )
+    feed_items, cfg_tz = configured_sources(feeds_path, ics_overrides)
+    if verified:
+        coverage.validate(feed_items)
+    elif not feed_items:
+        raise SystemExit("No calendar sources configured.")
 
     # timezone: explicit flag > config file > system local
     tz, tz_label = mc.resolve_tz(tz_name or cfg_tz)
@@ -151,12 +164,17 @@ def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
 
     cats = mc.get_categories()
     # identity feeds, then any "invisible" (non-identity) calendars
-    feed_items = list(feeds.items()) + [(mc.INVISIBLE_ID, s) for s in invisible_srcs]
     all_events, unknown, total_all_day, cal_names = [], [], 0, {}
+    source_results = []
     for category, src in feed_items:
         if category not in cats and category not in mc.SPECIAL_BUCKETS:
             unknown.append(category)
-        evs, n_ad, calname = expand_feed(category, src, week_start, week_end, tz)
+        try:
+            evs, n_ad, calname = expand_feed(category, src, week_start, week_end, tz)
+        except Exception:
+            raise SystemExit(f"Calendar retrieval or parsing failed for {category}. "
+                             "No weekly files written; check that calendar source.") from None
+        source_results.append({"category": category, "status": "fetched", "event_count": len(evs)})
         total_all_day += n_ad
         all_events.extend(evs)
         if calname and category in cats:
@@ -177,6 +195,10 @@ def run(week_key=None, feeds_path=None, ics_overrides=None, tz_name=None,
     out_path = out_dir / "events.json"
     out_path.write_text(json.dumps(all_events, indent=2, ensure_ascii=False) + "\n")
 
+    if verified:
+        coverage.write(week_key, out_path, feed_items, source_results, tz_label)
+    else:
+        (out_dir / "coverage.json").unlink(missing_ok=True)
     if verbose:
         print(f"Wrote {len(all_events)} events -> {out_path}")
         if total_all_day:
@@ -205,9 +227,10 @@ def main(argv=None):
     ap.add_argument("--ics", action="append", metavar="ID=PATH",
                     help="add/override a feed (identity id = local .ics path or URL), repeatable")
     ap.add_argument("--timezone", help="IANA tz override (default: config, then system local)")
+    ap.add_argument("--sample", action="store_true", help="unverified fixture ingestion; never use for a weekly review")
     args = ap.parse_args(argv)
     run(week_key=args.week, feeds_path=args.feeds,
-        ics_overrides=parse_ics_overrides(args.ics), tz_name=args.timezone)
+        ics_overrides=parse_ics_overrides(args.ics), tz_name=args.timezone, verified=not args.sample)
 
 
 if __name__ == "__main__":

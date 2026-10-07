@@ -96,3 +96,25 @@ Fixed shapes shared between the engines. Change them deliberately, keeping the r
 The markdown under `weeks/` (reports, reflections, coaching) is written to be
 Obsidian-vault friendly — YAML frontmatter and clean headings — so `Moon/` can sit
 inside a vault and be browsed week by week.
+
+## Complete calendars before review
+
+During initial setup, confirm the full calendar list with the user, including any
+Trash and Invisible calendars, then run `./Moon/scripts/moon-weekly --confirm-sources`.
+This records only source IDs/counts in private `Astronaut/expected-calendars.json`.
+Repeat confirmation only for intentional user-approved source-list changes; never use
+it automatically to make an incomplete configuration pass.
+
+A regular weekly run refuses missing identities, changed source counts, or failed
+calendar retrieval/parsing before overwriting weekly events, reports, or trends.
+Successfully read calendars with no events can legitimately yield 0h. Optional calendars
+that were never enabled are shown as not measured in the coverage section.
+
+Before presenting any review, run `./Moon/scripts/moon-weekly --week <ISO-week>`, then
+`./Moon/scripts/moon-weekly --week <ISO-week> --check-coverage`. The latter is read-only:
+it verifies private `coverage.json` against current sources, expected counts, categories,
+events and report. Existing reflections and coaching are preserved. Direct sample
+`ingest.py --sample` and engine calculations remain available but unverified for review.
+
+Regression checks: `python3 Moon/scripts/test_engine.py` and
+`python3 Moon/scripts/test_coverage.py` (temporary local calendars only).
