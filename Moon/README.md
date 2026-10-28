@@ -26,6 +26,8 @@ project-moon/
 │   │       ├── time-report.md  # identities + Trash + Invisible: cognitive hours + % + event log
 │   │       ├── signals.md      # what changed, schedule shape, sequences, carried commitments (Engine A)
 │   │       ├── signals.json    # the same, structured
+│   │       ├── reviewed/       # frozen computed files of a reviewed week (runner, first re-pull only)
+│   │       ├── repull-diff.md  # what changed since the review (runner, only when something did)
 │   │       ├── reflection.md   # the saved weekly reflection (Engine B)
 │   │       └── coaching.md     # the saved weekly coaching note (Engine B)
 │   ├── trends.csv              # longitudinal record (long format) — gitignored (personal aggregates)
@@ -71,6 +73,8 @@ Fixed shapes shared between the engines. Change them deliberately, keeping the r
 | `config/signals.yaml` | signal rules: `thresholds`, `focus_identities`, `markers`, `lexicons` (committed, editable; built-in defaults) |
 | `weeks/<ISO-week>/signals.md` / `.json` | `flags`, `week_over_week`, `days`, `sequences`, `trash`, `markers`, `carry` (last plan, commitments, open threads) |
 | `threads.md` | coach memory: `## Open` / `## Closed`, one dated bullet per thread (gitignored; coaching playbook writes it) |
+| `weeks/<ISO-week>/reviewed/`, `repull-diff.md` | a reviewed week's frozen computed files, and the diff of a later pull against them |
+| `weeks/<ISO-week>/coaching-revised-YYYY-MM-DD.md` | a coaching revision (`revision_of: coaching.md`); newest `date:` wins for carried commitments |
 | `weeks/<ISO-week>/reflection.md` | the saved weekly reflection |
 | `weeks/<ISO-week>/coaching.md` | the saved weekly coaching note |
 | `trends.csv` | long format: `week_iso, category_set_version, category_id, cognitive_hours, raw_minutes, event_count` |
@@ -129,5 +133,5 @@ events and report. Existing reflections and coaching are preserved. Direct sampl
 `ingest.py --sample` and engine calculations remain available but unverified for review.
 
 Regression checks: `python3 Moon/scripts/test_engine.py`,
-`python3 Moon/scripts/test_signals.py`, and `python3 Moon/scripts/test_coverage.py`
-(temporary local calendars only).
+`python3 Moon/scripts/test_signals.py`, `python3 Moon/scripts/test_review_guard.py`,
+and `python3 Moon/scripts/test_coverage.py` (temporary local calendars only).

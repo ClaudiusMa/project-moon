@@ -45,7 +45,7 @@ core is Python scripts and markdown playbooks — there is no dependency on any 
 
 The unit of work is one **ISO week** (Monday–Sunday, in your local timezone, e.g.
 `2026-W24`). You review the **week that just closed** and plan the **next** one. Each
-week moves through five steps:
+week moves through six steps:
 
 1. **Ingest** — Read one `.ics` feed per identity (plus any `trash_time` / `invisible`
    calendars) from your private `Astronaut/rocket.md`, expand recurring events, normalize
@@ -118,7 +118,12 @@ activity categories — there is no auto-migration (a clean start).
 - `Moon/weeks/<ISO-week>/reflection.md` — the saved weekly reflection.
 - `Moon/weeks/<ISO-week>/coaching.md` — the saved weekly coaching note. Its
   **Commitments for this week** items carry `calendar:` and `done:` so the next week's
-  signals can list them for grading.
+  signals can list them for grading. A revision is `coaching-revised-YYYY-MM-DD.md`
+  (frontmatter `revision_of: coaching.md`); the next week's signals carry commitments
+  from whichever coaching file of the previous week has the newest `date:`.
+- `Moon/weeks/<ISO-week>/reviewed/` + `repull-diff.md` — written by the runner only for
+  a week that already had a `reflection.md` when it was re-pulled: the frozen computed
+  files the review was based on, and the diff of the current pull against them.
 - `Moon/threads.md` — the coach's running memory: **Open** (questions, hypotheses,
   watches) and **Closed** threads, one dated bullet each. Gitignored; written only by the
   coaching playbook; its Open bullets are copied into each week's `signals.md`.
@@ -171,9 +176,16 @@ activity categories — there is no auto-migration (a clean start).
 - **Secrets stay out of git.** The `Astronaut/` workspace (your `rocket.md` + any local
   calendar exports), `Moon/weeks/` (events, reflections, coaching), and `Moon/trends.csv`
   (per-identity weekly aggregates) are gitignored. Never commit them.
-- **Don't rewrite a finished week.** Re-running a past week should regenerate the
-  computed artifacts, but the reflection and coaching are dated personal records —
-  preserve them.
+- **Don't rewrite a finished week — and don't let a re-pull rewrite it silently.**
+  Re-running a past week regenerates the computed artifacts, but the reflection and
+  coaching are dated personal records — preserve them. Calendars keep changing after a
+  review (a block shortened, deleted, or moved to another identity), so `moon-weekly`
+  freezes a reviewed week's computed files in `Moon/weeks/<ISO-week>/reviewed/` the
+  first time it re-pulls that week, then writes `repull-diff.md` and prints a WARNING
+  whenever the new pull differs (events removed / added / changed, identity hours that
+  moved). `signals.md` carries the same note. A coach working on a re-pulled week uses
+  the current numbers and says which ones moved; the reviewed numbers in the original
+  notes are not errors.
 
 ## Running the weekly flow
 

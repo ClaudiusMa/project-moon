@@ -11,9 +11,11 @@ the product overview and where this sits, see [`../README.md`](../README.md).
 | `ingest.py` | **M1** — read one `.ics` per category, expand recurrence, normalize to local tz, bucket into a Mon–Sun ISO week → `weeks/<ISO-week>/events.json`. |
 | `engine.py` | **M2** — merge per-identity, round each block up to whole hours, sum → `weeks/<ISO-week>/time-report.md` (display names + % of week) + upsert `trends.csv`. Pure stdlib. |
 | `signals.py` | **M3** — read the week against prior weeks and the clock → `weeks/<ISO-week>/signals.md` + `signals.json`: identity drops/surges vs the trailing median, 0h streaks, Trash rises by time of day, late nights, lost mornings, early long days, cross-day sequences, deep blocks, 🍅/✖️ markers, title-lexicon pointers, and last week's plan + commitments to grade. Rules in `../config/signals.yaml`. Pure stdlib. |
-| `moon-weekly` | **M5** — run ingest → engine → signals for the most recent completed week, print a summary with the flags, point to the reflection + coaching playbooks. |
+| `review_guard.py` | **M4** — for a week that already has a `reflection.md`: freeze its computed files in `weeks/<ISO-week>/reviewed/` before the first re-pull, then write `repull-diff.md` and warn when a later pull differs. Pure stdlib. |
+| `moon-weekly` | **M5** — run review guard → ingest → engine → signals for the most recent completed week, print a summary with the flags (and a re-pull warning if a reviewed week changed), point to the reflection + coaching playbooks. |
 | `test_engine.py` | Guardrail — locks the cognitive-hour math and feed parsing (`python3 test_engine.py`). |
 | `test_signals.py` | Guardrail — locks the signal rules (`python3 test_signals.py`). |
+| `test_review_guard.py` | Guardrail — locks the snapshot/diff behaviour (`python3 test_review_guard.py`). |
 | `moon_common.py` | Shared paths, the identity set loader (`../config/categories.yaml`), the all-day policy, tz, ISO-week math, feed-config loading. |
 | `requirements.txt` | Ingestion deps (`icalendar`, `recurring-ical-events`, `PyYAML`). |
 
@@ -86,3 +88,10 @@ Week keys are ISO `YYYY-Www` (Monday–Sunday, local tz). Without `--week`, the
   90m+ starting 06:00–10:00; a "late night" is any event ending at/after 23:00; an
   "early long day" is an event starting at/before 07:00 lasting 5h+. Lexicon hits point
   at titles; they never categorize.
+- **Baselines are only as comparable as the sources.** When a Trash or Invisible
+  calendar is added, removed, or redefined, the medians straddle that change for
+  `baseline_weeks` weeks. Nothing detects this; note it in `threads.md` as a watch.
+- **Carried commitments** come from the previous week's newest coaching file
+  (`coaching.md` or `coaching-revised*.md`, by frontmatter `date:`). Open threads are
+  copied from `threads.md` as it is *now*, so re-running an old week's signals shows
+  current threads, not the threads of that time.

@@ -29,7 +29,7 @@ reports render each `display_name`. Keep all three in sync.
   happened to be time with a friend still counts once, on whichever identity was the
   point. The richness — "and it was also good for X" — is what the weekly reflection
   is for.
-- **The names and `id`s are the contract.** The calendars, `feeds.yaml`,
+- **The names and `id`s are the contract.** The calendars, `Astronaut/rocket.md`,
   `categories.yaml`, the reports, and `trends.csv` all key off them. This set is
   `identity_v1`; changing it is a breaking change (see [The contract](#the-contract)).
 
@@ -193,7 +193,7 @@ ledger.
 ## The contract
 
 - The eight `id`s and `display_name`s above are fixed and must stay byte-identical
-  across [`categories.yaml`](categories.yaml), `feeds.yaml`, the reports, and
+  across [`categories.yaml`](categories.yaml), `Astronaut/rocket.md`, the reports, and
   `trends.csv`.
 - This set is stamped `category_set_version: identity_v1`. It is a **breaking change**
   from the original activity categories (Learn / Build / Career / …); there is no

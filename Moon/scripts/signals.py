@@ -255,8 +255,11 @@ def week_over_week(cats, trends, week_key, this_week, cfg):
             continue
         if median is not None and len(hist) >= 2:
             if hours <= th["drop_ratio"] * median and median - hours >= th["drop_min_hours"]:
-                flags.append(_flag(ATTENTION, "identity_drop", cat,
-                                   f"{name} dropped to {hours}h",
+                if hours == 0 and prev_h == 0:
+                    title = f"{name} still at 0h ({_ordinal(streak)} recorded week)"
+                else:
+                    title = f"{name} dropped to {hours}h"
+                flags.append(_flag(ATTENTION, "identity_drop", cat, title,
                                    [_cmp(prev, prev_h, median, len(hist))]))
             elif hours >= th["surge_ratio"] * median and hours - median >= th["surge_min_hours"]:
                 flags.append(_flag(NOTICE, "identity_surge", cat,
@@ -268,6 +271,10 @@ def week_over_week(cats, trends, week_key, this_week, cfg):
                                    f"{name} dropped to {hours}h",
                                    [f"{prev_h}h in {prev} (only one prior recorded week)."]))
     return rows, flags, base
+
+
+def _ordinal(n):
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
 
 
 def _cmp(prev, prev_h, median, n):
@@ -577,18 +584,24 @@ def markers(cats, events, cfg):
 
 
 # --- Carry-ins: last week's plan, commitments, open threads ----------------------------
+def _sections(text, heading_pred):
+    """The body lines of every `## ` section whose heading satisfies pred, in order."""
+    out, cur = [], None
+    for ln in text.splitlines():
+        if ln.startswith("## "):
+            cur = [] if heading_pred(ln[3:].strip()) else None
+            if cur is not None:
+                out.append(cur)
+            continue
+        if cur is not None:
+            cur.append(ln)
+    return out
+
+
 def _section(text, heading_pred):
     """Return the body lines of the first `## ` section whose heading satisfies pred."""
-    lines, grab, out = text.splitlines(), False, []
-    for ln in lines:
-        if ln.startswith("## "):
-            if grab:
-                break
-            grab = heading_pred(ln[3:].strip())
-            continue
-        if grab:
-            out.append(ln)
-    return out
+    found = _sections(text, heading_pred)
+    return found[0] if found else []
 
 
 def extract_plan(reflection_text):
@@ -599,11 +612,16 @@ def extract_plan(reflection_text):
 def extract_commitments(coaching_text):
     """Numbered or bulleted items under any `## ` heading mentioning commitments,
     moves, or an experiment. Verbatim; the coach grades them."""
-    items = []
-    for ln in _section(coaching_text, lambda h: re.search(r"commit|moves|experiment|action", h, re.I) is not None):
-        if re.match(r"^\s*(\d+[.)]|[-*])\s+", ln):
-            items.append(re.sub(r"^\s*(\d+[.)]|[-*])\s+", "", ln).strip())
-    return items
+    def is_forward(h):
+        # "Last week's commitments" is the grading table, not this week's promises
+        return (re.search(r"commit|moves|experiment|action", h, re.I) is not None
+                and re.search(r"last week|previous|prior|graded", h, re.I) is None)
+    for body in _sections(coaching_text, is_forward):
+        items = [re.sub(r"^\s*(\d+[.)]|[-*])\s+", "", ln).strip()
+                 for ln in body if re.match(r"^\s*(\d+[.)]|[-*])\s+", ln)]
+        if items:
+            return items
+    return []
 
 
 def extract_open_threads(threads_text):
@@ -611,15 +629,39 @@ def extract_open_threads(threads_text):
     return [ln.strip() for ln in body if ln.strip().startswith(("-", "*"))]
 
 
+def _frontmatter_date(text):
+    m = re.search(r"^date:\s*(\d{4}-\d{2}-\d{2})", text, re.M)
+    return m.group(1) if m else ""
+
+
+def latest_coaching_file(week_dir):
+    """The coaching note whose commitments carry forward: `coaching.md` or any
+    `coaching-revised*.md`, whichever has the newest frontmatter `date:` (ties and
+    undated files fall back to the original). A revision replaces the original's
+    commitments only by being newer; nothing else is inferred."""
+    week_dir = Path(week_dir)
+    candidates = [p for p in [week_dir / "coaching.md"] + sorted(week_dir.glob("coaching-revised*.md")) if p.exists()]
+    if not candidates:
+        return None
+    dated = [(_frontmatter_date(p.read_text()), i, p) for i, p in enumerate(candidates)]
+    dated.sort(key=lambda t: (t[0], -t[1]), reverse=True)
+    return dated[0][2]
+
+
 def carry_ins(week_key, prev_week):
-    out = {"previous_week": prev_week, "plan": None, "commitments": [], "open_threads": []}
+    out = {"previous_week": prev_week, "plan": None, "commitments": [], "commitments_source": None,
+           "open_threads": [], "repull_diff": None}
     if prev_week:
         refl = mc.WEEKS_DIR / prev_week / "reflection.md"
-        coach = mc.WEEKS_DIR / prev_week / "coaching.md"
+        coach = latest_coaching_file(mc.WEEKS_DIR / prev_week)
         if refl.exists():
             out["plan"] = extract_plan(refl.read_text()) or None
-        if coach.exists():
+        if coach is not None:
             out["commitments"] = extract_commitments(coach.read_text())
+            out["commitments_source"] = coach.name
+    diff = mc.WEEKS_DIR / week_key / "repull-diff.md"
+    if diff.exists():
+        out["repull_diff"] = diff.name
     if THREADS_MD.exists():
         out["open_threads"] = extract_open_threads(THREADS_MD.read_text())
     return out
@@ -660,7 +702,8 @@ def compute(week_key, events, trends, cats, cfg, prev_week_events=None, carry=No
         "flags": flags, "week_over_week": rows, "days": days, "sequences": sequences,
         "shape": shape_counts, "shape_history": history or [],
         "multi_day_envelopes": envelopes, "trash": trash, "markers": mk,
-        "carry": carry or {"previous_week": None, "plan": None, "commitments": [], "open_threads": []},
+        "carry": carry or {"previous_week": None, "plan": None, "commitments": [], "commitments_source": None,
+                           "open_threads": [], "repull_diff": None},
     }
 
 
@@ -672,6 +715,10 @@ def render_md(sig, cats):
          ("_Deterministic observations from `events.json` and `trends.csv`. Facts, not advice. "
           "The reflection shows the flags before the questions; the coach must answer every ⚠ "
           "item and may use the rest as evidence. Numbers are cognitive hours from Engine A._"), ""]
+    if sig["carry"].get("repull_diff"):
+        L += [(f"> **Re-pulled after review.** This week's calendars changed after its reflection was "
+               f"written; the reflection and the coaching of that date cite the reviewed numbers. "
+               f"See `{sig['carry']['repull_diff']}` and `reviewed/`. Everything below is from the current pull."), ""]
     # Flags
     L += ["## Flags", ""]
     if sig["flags"]:
@@ -772,7 +819,8 @@ def render_md(sig, cats):
     else:
         L += ["_No plan carried from a previous reflection._", ""]
     if c["commitments"]:
-        L += [f"**Commitments from the {c['previous_week']} coaching** (grade each: kept / partly / not):", ""]
+        src = f" (`{c['commitments_source']}`)" if c.get("commitments_source") else ""
+        L += [f"**Commitments from the {c['previous_week']} coaching**{src} (grade each: kept / partly / not):", ""]
         L += [f"- [ ] {x}" for x in c["commitments"]]
         L.append("")
     else:

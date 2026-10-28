@@ -147,9 +147,13 @@ Adopt this role before reading the inputs; treat it as binding:
    commitment as one numbered item that contains `calendar:` and `done:` so next week's
    grading is mechanical.
 10. **Write `Moon/weeks/<ISO-week>/coaching.md`** from the template, then read the key
-   points back to the person. Preserve existing dated coaching. If the user requests a
-   revision, save it as `coaching-revised.md` (or a dated revision if that exists), with
-   its revision date and a link to the original.
+   points back to the person. Preserve existing dated coaching. If a coaching note
+   already exists (a requested revision, or a replay like a test run), save the new one
+   as `coaching-revised-YYYY-MM-DD.md` with frontmatter `revision_of: coaching.md`, a
+   link to the original, and the reason for the revision in its first lines. The next
+   week's `signals.md` carries commitments from whichever coaching file has the newest
+   `date:`, so a revision's commitments replace the original's for grading; say in the
+   revision whether the person has seen them.
 
 ## Rules
 
@@ -180,8 +184,10 @@ Adopt this role before reading the inputs; treat it as binding:
 - **Nothing flagged goes unanswered; nothing promised goes ungraded.** Every ⚠ in
   `signals.md` appears in **Signals answered**; every item under **To check this week**
   appears in **Last week's commitments**.
-- **Depth before compression.** Aim for 400–650 words, but allow more when a strategy
-  question needs explanation and examples. Develop one central pattern rather than
+- **Depth before compression.** Aim for 400–650 words of coaching *after* the
+  **Signals answered** and **Last week's commitments** sections, which are as long as
+  the flags and commitments require; allow more when a strategy question needs
+  explanation and examples. Develop one central pattern rather than
   cataloging the allocation. Use the career and life lenses in reasoning; the output
   need not give them equal space or separate headings. Avoid unsupported claims about
   motives, attractiveness, or guaranteed social outcomes.
@@ -316,4 +322,14 @@ next session reflects it. Keep entries short and dated; let them accumulate.
   `trends.csv` and `events.json`, quoting only numbers that are in those files.
 - **No previous coaching note** — the commitments table says "No commitments from last
   week"; grade only the plan from the previous reflection, if any.
+- **Re-pulled after review** — `signals.md` and `repull-diff.md` say the calendars
+  changed after the reflection was written. Coach on the current numbers, name what
+  moved in the first lines, and do not treat the reviewed numbers in older notes as
+  errors.
+- **Unattended or replay run** (no person to ask; coaching a week that is already
+  past) — state the week instead of confirming it; put the read-back in the note
+  itself; use only data through the target week (ignore later rows in `trends.csv`,
+  later week folders, and threads dated after it); and say plainly that the
+  commitments are what you would have asked for that week. A blank answer in the
+  reflection is noted, never inferred.
 - **A missing input** — proceed with what's present and say which signal you couldn't use.

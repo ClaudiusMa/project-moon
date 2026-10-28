@@ -61,7 +61,7 @@ reflection file.
    **read the computed week.** Read that week's `time-report.md`, `events.json`, and
    `signals.md`. Never calculate, estimate, re-round, or correct a number yourself; all
    numbers must be copied from Engine A's report, and every flag from `signals.md`.
-3. **Carry the plan.** Read the previous reflection's *"What do you plan to do next
+3. **Carry the plan.** Read the previous reflection's *"What do you plan to do this
    week?"* and place it in this reflection's *"What's your plan?"* (verbatim). If there's
    no prior reflection, use "No plan from last week."
 4. **Present the week rewind before asking anything.** Use the exact format and rules in
@@ -107,7 +107,8 @@ Present this block before the six questions:
 6. `## Carried commitments` followed by the commitments listed under **To check this
    week** in `signals.md`, verbatim as an unchecked list (or "No commitments from last
    week."). The person grades them in their own words when they answer *"How did it
-   go?"*; do not grade them here.
+   go?"*; do not grade them here. Do **not** show the open threads from `signals.md`;
+   they are the coach's working memory, not part of the rewind.
 
 Only after this whole block is visible should the six questions appear.
 
@@ -207,3 +208,7 @@ After the reflection is saved, run the **coaching playbook**
 - **No previous reflection** — *"What's your plan?"* is "No plan from last week."
 - **Reflection already exists for the week** — show the rewind first, then confirm before
   starting intake or overwriting it.
+- **Unattended run** (no person to ask, e.g. a test or replay) — resolve the week
+  yourself, present the rewind and the questions, and stop. Never write a
+  `reflection.md` without the person's answers; save the rewind to
+  `rewind-preview.md` if a record is wanted.

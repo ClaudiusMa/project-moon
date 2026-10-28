@@ -21,6 +21,7 @@ import ingest
 import engine
 import coverage
 import signals
+import review_guard
 
 
 def main(argv=None):
@@ -53,14 +54,20 @@ def main(argv=None):
         return
     coverage.validate(items)
     print(f"== Moon weekly · {week_key} ==")
+    week_dir = mc.WEEKS_DIR / week_key
+    if review_guard.snapshot_if_reviewed(week_dir):
+        print(f"Reviewed week: froze its current computed files in {week_dir / review_guard.SNAPSHOT_DIR}/")
     print("[1/3] Ingesting calendars ...")
     ingest.run(week_key=week_key, feeds_path=args.feeds,
                ics_overrides=ingest.parse_ics_overrides(args.ics),
                tz_name=args.timezone)
     print("[2/3] Computing cognitive hours ...")
     engine.run(week_key=week_key, source_items=items, tz_name=tz_label)
+    drift = review_guard.report_drift(week_key, week_dir)
     print("[3/3] Reading the week's signals ...")
     signals.run(week_key)
+    for line in drift:
+        print(line)
 
     report = mc.WEEKS_DIR / week_key / "time-report.md"
     playbook = mc.MOON_DIR / "playbooks" / "reflection.md"

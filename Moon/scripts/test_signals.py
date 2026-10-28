@@ -181,8 +181,37 @@ check("commitments extracted from the numbered list", sg.extract_commitments(coa
 coach2 = "## A small experiment for this week\n\n- one\n- two\n"
 check("bulleted experiment items count too", sg.extract_commitments(coach2), ["one", "two"])
 check("no commitments section -> empty", sg.extract_commitments("## Nothing\n\n1. x\n"), [])
+coach3 = ("## Signals answered\n\nx\n\n## Last week's commitments\n\n| Commitment | Kept? |\n| --- | --- |\n| a | kept |\n\n"
+          "## Commitments for this week\n\n1. **Weeknight stop —** why. calendar: x. done: y.\n2. **Doctor —** z.\n")
+check("grading table before the forward list is skipped", sg.extract_commitments(coach3),
+      ["**Weeknight stop —** why. calendar: x. done: y.", "**Doctor —** z."])
 threads = "# Threads\n\n## Open\n\n- 2026-10-13 — what happened after Burning Man?\n- hyp: late builds cost mornings\n\n## Closed\n\n- old\n"
 check("open threads extracted", sg.extract_open_threads(threads), ["- 2026-10-13 — what happened after Burning Man?", "- hyp: late builds cost mornings"])
+
+# --- newest coaching file wins for carried commitments ---------------------------------------
+import tempfile
+with tempfile.TemporaryDirectory() as tmp:
+    d = Path(tmp)
+    check("no coaching file -> None", sg.latest_coaching_file(d), None)
+    (d / "coaching.md").write_text("---\ndate: 2026-10-20\n---\n## Commitments for this week\n\n1. original\n")
+    check("only the original", sg.latest_coaching_file(d).name, "coaching.md")
+    (d / "coaching-revised.md").write_text("---\ndate: 2026-10-14\n---\n## Commitments\n\n1. older revision\n")
+    check("older revision loses to the original", sg.latest_coaching_file(d).name, "coaching.md")
+    (d / "coaching-revised-2026-10-27.md").write_text("---\ndate: 2026-10-27\n---\n## Commitments\n\n1. newest\n")
+    check("newest dated revision wins", sg.latest_coaching_file(d).name, "coaching-revised-2026-10-27.md")
+    (d / "coaching-revised-undated.md").write_text("# no frontmatter\n")
+    check("undated revision never wins", sg.latest_coaching_file(d).name, "coaching-revised-2026-10-27.md")
+
+# --- still at 0h wording ----------------------------------------------------------------------
+tr = {w: {"designer_taste": 8} for w in ["2026-W20", "2026-W21", "2026-W22", "2026-W23"]}
+tr["2026-W24"] = {"designer_taste": 0}
+_, fl, _ = sg.week_over_week(CATS, tr, "2026-W25", {"designer_taste": 0}, CFG)
+check("second straight 0h week reads as 'still at 0h'", next(f["title"] for f in fl if f["category"] == "designer_taste"),
+      "I am a designer with exceptional taste still at 0h (2nd recorded week)")
+_, fl, _ = sg.week_over_week(CATS, {w: {"designer_taste": 8} for w in ["2026-W23", "2026-W24"]}, "2026-W25", {"designer_taste": 0}, CFG)
+check("first 0h week reads as a drop", next(f["title"] for f in fl if f["category"] == "designer_taste"),
+      "I am a designer with exceptional taste dropped to 0h")
+check("ordinals", [sg._ordinal(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22)], ["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd"])
 
 # --- compute + render ---------------------------------------------------------------------------
 sig = sg.compute("2026-W42", events, {}, CATS, CFG)
