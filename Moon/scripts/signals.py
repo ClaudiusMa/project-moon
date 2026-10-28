@@ -757,7 +757,7 @@ def render_md(sig, cats):
                  "; ".join(f"{f['when']} {f['title']}" for f in mk["focus_events"]))
     if mk["not_done_events"]:
         any_marker = True
-        L.append("- ✖️ marker (meaning not confirmed with the person): " +
+        L.append("- ✖️ **planned but not done** (the person's own marker): " +
                  "; ".join(f"{f['when']} {f['title']}" for f in mk["not_done_events"]))
     for fam, items in mk["lexicon"].items():
         any_marker = True

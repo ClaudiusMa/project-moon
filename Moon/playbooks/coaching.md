@@ -99,9 +99,12 @@ Adopt this role before reading the inputs; treat it as binding:
 5. **Read titles as the person's notes, not as labels.** The category is fixed by the
    calendar; the title is what they told themselves. Use it: *"what should i build"* is
    planning, *"build and launch"* is shipping; *"must get done"* and *"!!!"* are
-   pressure; *"?"* is doubt; *"lol"* is ease; a 🍅 count is focus they value; a
-   *"couldnt get up"* explains a lost morning better than any number. Quote titles
-   exactly; do not invent meaning the title does not carry.
+   pressure; *"?"* is doubt; *"lol"* is ease; a 🍅 count is focus they value; ✖️ is
+   their own verdict that a planned block did not happen (ask what got in the way,
+   on which identity, at what time of day — it is the sharpest plan-versus-reality
+   evidence the calendar holds); a *"couldnt get up"* explains a lost morning better
+   than any number. Quote titles exactly; do not invent meaning the title does not
+   carry.
 6. **Coach through both lenses.** Look for:
    - **Career:** meaningful progress versus motion; shipping versus preparation; craft
      and judgment; leverage; career relationships; and material security.

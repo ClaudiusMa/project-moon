@@ -233,11 +233,14 @@ paths stay rooted in this product workspace.
 
 ## Calendar notation context
 
-- ✖️ appears on some titles (e.g. *"job apps and paper ✖️"*, *"bilibili etc ✖️"*). Its
-  meaning has **not** been confirmed with the user; `signals.md` lists such events as
-  "meaning not confirmed." Ask once, then record the answer here and in
-  `config/signals.yaml`.
-- 2026-10-06 — 🍅 means Pomodoro timer sessions. A number alongside it (such as
+- 2026-10-27 — ✖️ on a title means **planned but not done**: the block was scheduled
+  for that task and the task did not happen (e.g. *"job apps and paper ✖️"*). It is
+  the person's own verdict, written after the fact. `signals.md` lists these events;
+  the coach reads them as the clearest evidence of plan-versus-reality and asks what
+  got in the way, never as a character judgment. The category still comes from the
+  calendar the event sits on.
+- 2026-10-06 — 🍅 means Pomodoro timer sessions — **focus time**, confirmed again
+  2026-10-27. A number alongside it (such as
   `🍅 2`, `🍅 x 2`, or `3 🍅`) records how many sessions ran. The user regards these
   as highly productive focus time and values more sessions. Use this meaning in
   factual rewinds and reflection/coaching context; it does not change category

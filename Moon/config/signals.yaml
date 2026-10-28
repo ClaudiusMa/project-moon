@@ -36,8 +36,8 @@ thresholds:
 
 # Notation the person uses in titles. Counted, never interpreted by the engine.
 markers:
-  focus_session: "🍅"          # Pomodoro sessions; a number next to it is the count
-  not_done: "✖️"               # meaning not yet confirmed with the person
+  focus_session: "🍅"          # Pomodoro focus sessions; a number next to it is the count
+  not_done: "✖️"               # planned but not done — the person's own after-the-fact verdict
 
 # Word families that make a title worth reading. Matched case-insensitively on
 # whole words (phrases as substrings). A hit is a pointer, not a conclusion.
