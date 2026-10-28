@@ -1,0 +1,48 @@
+# Moon — signal rules (Engine A, deterministic).
+#
+# `signals.py` reads this file and turns the week's events.json + trends.csv into
+# signals.md / signals.json: facts the reflection shows before the questions and the
+# coach must answer. Nothing here changes a category or a cognitive-hour number —
+# the lexicons only point the reader at titles worth reading; the thresholds only
+# decide what gets flagged. Edit freely; the engine falls back to these defaults.
+
+version: signals_v1
+
+# Identities where a long uninterrupted block matters (deep work). A week with
+# hours here but no block of at least `deep_block_minutes` gets a notice.
+focus_identities: [builder, designer_taste]
+
+thresholds:
+  baseline_weeks: 6            # trailing recorded weeks used for the median
+  drop_ratio: 0.5              # flag when hours <= ratio x median ...
+  drop_min_hours: 4            # ... and the drop is at least this many hours
+  surge_ratio: 2.0             # notice when hours >= ratio x median ...
+  surge_min_hours: 6           # ... and the rise is at least this many hours
+  zero_streak_weeks: 3         # flag an identity at 0h this many recorded weeks in a row
+  trash_rise_hours: 3          # flag Trash when it rises this much over prev/median
+  invisible_surge_ratio: 1.5   # notice Invisible at ratio x median ...
+  invisible_surge_min_hours: 8 # ... and at least this many hours above it
+  late_night_end: "23:00"      # a day is a late night if any event ends at/after this
+  lost_morning_start: "06:00"  # a Trash/Invisible block starting in this window ...
+  lost_morning_latest_start: "10:00"
+  lost_morning_min_minutes: 90 # ... lasting at least this long is a lost morning
+  lost_mornings_attention: 2   # lost mornings per week before it is an attention flag
+  late_nights_attention: 3     # late nights per week before it is an attention flag
+  early_long_day_start: "07:00"   # an event starting at/before this ...
+  early_long_day_min_hours: 5     # ... and lasting at least this long is an early long day
+  deep_block_minutes: 90
+  deep_block_min_hours: 3
+  empty_weekdays_notice: 2     # weekdays with no identity event at all
+
+# Notation the person uses in titles. Counted, never interpreted by the engine.
+markers:
+  focus_session: "🍅"          # Pomodoro sessions; a number next to it is the count
+  not_done: "✖️"               # meaning not yet confirmed with the person
+
+# Word families that make a title worth reading. Matched case-insensitively on
+# whole words (phrases as substrings). A hit is a pointer, not a conclusion.
+lexicons:
+  sleep_disruption: [sleep, slept, sleeping, wake, woke, "get up", getup, "couldnt getup", tired, late, overslept, oversleep, insomnia, "4 am", "4am"]
+  rest_recovery: [rest, recovery, recover, nap, break, "no planning"]
+  screen_drift: [bilibili, youtube, ipad, game, gaming, "elden ring", scroll, scrolling, tiktok, netflix, reddit, twitter, "waste time"]
+  shipping: [ship, shipped, launch, launched, deploy, release, publish, published, submit, submitted]

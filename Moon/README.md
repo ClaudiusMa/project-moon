@@ -14,8 +14,9 @@ project-moon/
 │   ├── config/
 │   │   ├── categories.md       # the 8 identity accounts + the Trash / Invisible buckets
 │   │   ├── categories.yaml     # the 8 identities as data: id, display_name, core_question (canonical)
+│   │   ├── signals.yaml        # signal rules: thresholds, focus identities, title markers + lexicons
 │   │   └── feeds.example.md    # committed template for your feed list
-│   ├── scripts/                # Engine A — deterministic Python (ingest + cognitive-hour math + test_engine.py)
+│   ├── scripts/                # Engine A — deterministic Python (ingest + cognitive-hour math + signals + tests)
 │   ├── playbooks/
 │   │   ├── reflection.md       # Engine B — the weekly reflection ritual
 │   │   └── coaching.md         # Engine B — grounded advice after the reflection
@@ -23,9 +24,12 @@ project-moon/
 │   │   └── <ISO-week>/         # e.g. 2026-W24/  (Monday–Sunday, local timezone)
 │   │       ├── events.json     # normalized events for the week (Engine A)
 │   │       ├── time-report.md  # identities + Trash + Invisible: cognitive hours + % + event log
+│   │       ├── signals.md      # what changed, schedule shape, sequences, carried commitments (Engine A)
+│   │       ├── signals.json    # the same, structured
 │   │       ├── reflection.md   # the saved weekly reflection (Engine B)
 │   │       └── coaching.md     # the saved weekly coaching note (Engine B)
-│   └── trends.csv              # longitudinal record (long format) — gitignored (personal aggregates)
+│   ├── trends.csv              # longitudinal record (long format) — gitignored (personal aggregates)
+│   └── threads.md              # the coach's running memory: open questions, hypotheses — gitignored
 └── Astronaut/                  # YOUR private workspace — gitignored, never committed
     └── rocket.md               # your feed list: identity id -> secret iCal URL / local .ics path
 ```
@@ -40,12 +44,17 @@ project-moon/
   any `trash_time` / `invisible` calendars) from `Astronaut/rocket.md`, expands
   recurrence, normalizes timezones, and produces `events.json`, `time-report.md`, and
   `trends.csv`. It also flags when a Google calendar's name no longer matches
-  `categories.yaml` (a rename you may want to mirror). No LLM, no tool-specific
-  dependency — same calendars always yield the same numbers. `test_engine.py` locks the math.
+  `categories.yaml` (a rename you may want to mirror). It then reads the week against
+  the person's own prior weeks and the clock — `signals.py` writes `signals.md` with
+  identity drops/surges, 0h streaks, Trash rises broken down by time of day, late
+  nights, lost mornings, what followed what, and last week's plan and commitments to
+  grade. No LLM, no tool-specific dependency — same calendars always yield the same
+  numbers and the same flags. `test_engine.py` and `test_signals.py` lock them.
 - **Engine B — `playbooks/` (markdown rituals).** Human-in-the-loop flows an agentic
   tool reads and follows: `reflection.md` (exact computed allocation + factual schedule
-  rewind, then bare weekly questions) followed by `coaching.md` (grounded advice against
-  the actual schedule; learns from your feedback over time).
+  rewind + the signal flags, then bare weekly questions) followed by `coaching.md`
+  (answers every flag with a cause and a decision, grades last week's commitments,
+  advises against the actual schedule, and keeps its memory of you in `threads.md`).
 
 The engines communicate only through the data contracts (next section).
 
@@ -59,6 +68,9 @@ Fixed shapes shared between the engines. Change them deliberately, keeping the r
 | `config/categories.yaml` | the 8 identities as data: `{id, display_name, core_question}` (canonical, committed) |
 | `weeks/<ISO-week>/events.json` | array of `{uid, category, title, start_local, end_local, duration_min, all_day}` (`category` = identity `id`, or `trash_time` / `invisible`) |
 | `weeks/<ISO-week>/time-report.md` | all 8 identities (incl 0h) + `Trash time` + `Invisible (unallocated)`: cognitive hours + % of week + event log |
+| `config/signals.yaml` | signal rules: `thresholds`, `focus_identities`, `markers`, `lexicons` (committed, editable; built-in defaults) |
+| `weeks/<ISO-week>/signals.md` / `.json` | `flags`, `week_over_week`, `days`, `sequences`, `trash`, `markers`, `carry` (last plan, commitments, open threads) |
+| `threads.md` | coach memory: `## Open` / `## Closed`, one dated bullet per thread (gitignored; coaching playbook writes it) |
 | `weeks/<ISO-week>/reflection.md` | the saved weekly reflection |
 | `weeks/<ISO-week>/coaching.md` | the saved weekly coaching note |
 | `trends.csv` | long format: `week_iso, category_set_version, category_id, cognitive_hours, raw_minutes, event_count` |
@@ -116,5 +128,6 @@ it verifies private `coverage.json` against current sources, expected counts, ca
 events and report. Existing reflections and coaching are preserved. Direct sample
 `ingest.py --sample` and engine calculations remain available but unverified for review.
 
-Regression checks: `python3 Moon/scripts/test_engine.py` and
-`python3 Moon/scripts/test_coverage.py` (temporary local calendars only).
+Regression checks: `python3 Moon/scripts/test_engine.py`,
+`python3 Moon/scripts/test_signals.py`, and `python3 Moon/scripts/test_coverage.py`
+(temporary local calendars only).

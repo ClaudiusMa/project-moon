@@ -10,8 +10,10 @@ the product overview and where this sits, see [`../README.md`](../README.md).
 | --- | --- |
 | `ingest.py` | **M1** — read one `.ics` per category, expand recurrence, normalize to local tz, bucket into a Mon–Sun ISO week → `weeks/<ISO-week>/events.json`. |
 | `engine.py` | **M2** — merge per-identity, round each block up to whole hours, sum → `weeks/<ISO-week>/time-report.md` (display names + % of week) + upsert `trends.csv`. Pure stdlib. |
-| `moon-weekly` | **M5** — run ingest → engine for the most recent completed week, print a summary, point to the reflection + coaching playbooks. |
+| `signals.py` | **M3** — read the week against prior weeks and the clock → `weeks/<ISO-week>/signals.md` + `signals.json`: identity drops/surges vs the trailing median, 0h streaks, Trash rises by time of day, late nights, lost mornings, early long days, cross-day sequences, deep blocks, 🍅/✖️ markers, title-lexicon pointers, and last week's plan + commitments to grade. Rules in `../config/signals.yaml`. Pure stdlib. |
+| `moon-weekly` | **M5** — run ingest → engine → signals for the most recent completed week, print a summary with the flags, point to the reflection + coaching playbooks. |
 | `test_engine.py` | Guardrail — locks the cognitive-hour math and feed parsing (`python3 test_engine.py`). |
+| `test_signals.py` | Guardrail — locks the signal rules (`python3 test_signals.py`). |
 | `moon_common.py` | Shared paths, the identity set loader (`../config/categories.yaml`), the all-day policy, tz, ISO-week math, feed-config loading. |
 | `requirements.txt` | Ingestion deps (`icalendar`, `recurring-ical-events`, `PyYAML`). |
 
@@ -41,6 +43,7 @@ so it runs on a hand-written `events.json` even without the install above.
 # Run the stages individually:
 python3 ingest.py --week 2026-W24
 python3 engine.py --week 2026-W24
+python3 signals.py --week 2026-W24     # needs events.json; uses trends.csv for history
 ```
 
 Week keys are ISO `YYYY-Www` (Monday–Sunday, local tz). Without `--week`, the
@@ -75,3 +78,11 @@ Week keys are ISO `YYYY-Www` (Monday–Sunday, local tz). Without `--week`, the
 - `raw_minutes` in `trends.csv` is the post-merge union of covered time;
   `cognitive_hours` is the rounded-up sum. Both reflect only counted events
   (all-day events excluded under the default policy).
+- **Signals compare against recorded weeks only.** The baseline is the last
+  `baseline_weeks` rows in `trends.csv` before the target week; gaps are named, never
+  interpolated. Shape flags (late nights, lost mornings) are *attention* only when the
+  count is both above the threshold and above the person's own median over prior weeks
+  whose `events.json` is still on disk. A "lost morning" is a Trash/Invisible block of
+  90m+ starting 06:00–10:00; a "late night" is any event ending at/after 23:00; an
+  "early long day" is an event starting at/before 07:00 lasting 5h+. Lexicon hits point
+  at titles; they never categorize.

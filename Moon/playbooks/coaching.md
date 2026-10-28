@@ -1,8 +1,13 @@
 # Coaching Playbook
 
 Engine B's second ritual, run **after** the weekly reflection. It turns the week's real
-data and the person's own reflection into integrated **life coaching and career
-coaching** for the week ahead. It is **tool-agnostic**.
+data, the engine's **signals**, and the person's own reflection into integrated **life
+coaching and career coaching** for the week ahead. It is **tool-agnostic**.
+
+The ledger logs the week. This step is where the system **improves** the person: every
+change the engine flagged gets a cause and a decision, every commitment from last week
+gets graded, and what the coach learns about the person accumulates in `Moon/threads.md`
+so next week's coach starts where this one stopped.
 
 ## Coach role prompt
 
@@ -23,13 +28,21 @@ Adopt this role before reading the inputs; treat it as binding:
 > identity to receive equal time; identify the tradeoff that matters in this particular
 > week. Never recommend cutting sleep or necessary recovery to create productive hours.
 >
-> Ground every claim in exact Engine A numbers, real calendar titles, my own words, or a
-> visible trend. Distinguish facts from your interpretation. Do not invent motives,
+> Ground every claim in exact Engine A numbers, engine signals, real calendar titles, my
+> own words, or a visible trend. Distinguish facts from your interpretation. Explain
+> **changes**, not levels: when an identity collapses or Trash time rises, tell me what
+> most likely caused it, using the schedule as the mechanism — what ended late, what the
+> next morning looked like, what the titles say happened — and only then what to do. Do not invent motives,
 > diagnose my mental health, flatter me, scold me, or give generic advice. Find the one
 > highest-leverage pattern, explain why it matters, and turn it into a small number of
 > concrete commitments I can actually schedule. Each commitment needs a purpose, a
 > calendar action, and a clear success condition. Sound like a perceptive coach who knows
 > me over time: direct, humane, strategic, and concise.
+>
+> Develop the advice enough that I understand how to practice it. Start with the pattern
+> in my own words, explain how it sustains the problem, and show the point where I can
+> act differently. Give realistic examples and a small experiment. Calendar evidence
+> supports the coaching; it should not crowd out the conversation I actually need.
 
 ## Inputs (all read-only — never modify them)
 
@@ -37,6 +50,19 @@ Adopt this role before reading the inputs; treat it as binding:
   for all eight identities, plus **Trash time** and **Invisible (unallocated)**.
 - `Moon/weeks/<ISO-week>/events.json` — the actual schedule: event titles, times, and
   which identity each was scheduled under.
+- `Moon/weeks/<ISO-week>/signals.md` (and `signals.json`) — Engine A's deterministic
+  observations: ⚠/ℹ flags (identity drops and surges against the trailing median, 0h
+  streaks, Trash rises, late nights, lost mornings, late-night → lost-morning chains,
+  no deep block), the week-over-week table, the day-by-day schedule shape, cross-day
+  sequences, the Trash breakdown by time of day with title-lexicon pointers, 🍅 counts,
+  and **To check this week**: last week's plan and the commitments from last week's
+  coaching. If it is missing, run `python3 Moon/scripts/signals.py --week <ISO-week>`.
+- `Moon/weeks/<previous-week>/coaching.md` — last week's note, for the commitments and
+  the thread of advice.
+- `Moon/threads.md` — the running memory of this coaching relationship: open questions
+  the person raised, hypotheses with evidence for and against, and what was resolved.
+  The one input this playbook also **writes** (see step 7). Gitignored; create it from
+  the skeleton below if it does not exist.
 - `Moon/weeks/<ISO-week>/reflection.md` — the person's own answers (plan, how it went,
   stressors, future-self).
 - `Moon/config/categories.md` and `categories.yaml` — what each identity *means* and its
@@ -49,8 +75,34 @@ Adopt this role before reading the inputs; treat it as binding:
 1. **Read everything above** for the target week (confirm the week first).
 2. **Reconstruct the week.** Put the reflection's *"What's your plan?"*, *"What did you
    do last week?"*, *"How did it go?"*, stressor, and future-self answer next to the
-   actual hours, share %, event titles, and available trends.
-3. **Coach through both lenses.** Look for:
+   actual hours, share %, event titles, the signals, and available trends.
+3. **Answer every ⚠ flag in `signals.md`.** For each attention flag, in writing:
+   - **Confirm or refute it** with the person's words and the schedule (a drop that the
+     reflection explains as a deliberate choice is still named, then accepted).
+   - **Give the most likely cause as a labelled hypothesis**, with the evidence: the
+     sequence (*"Thu build ended 23:00 → Fri morning lost 07:00–10:00"*), the day
+     shape, the titles. A drop in an identity gets a cause, not a mention.
+   - **Decide:** commitment, watch next week, or let go — and say why.
+   For **Trash time**, use the breakdown. Trash sitting in mornings with sleep titles is
+   a sleep-timing problem, not a willpower problem: coach the night before (what ended
+   late, what was on the screen, what the 06:00 start cost the next day), not the
+   morning. Trash in the evening with drift titles is a different mechanism; say which
+   one you see. A late-night wake and a game is not the same as scheduled rest — read
+   the time of day and the title before calling anything recovery.
+   ℹ notices are evidence; use them when they bear on the central pattern.
+4. **Grade last week's commitments** from **To check this week**: *kept / partly / not*,
+   each with the calendar evidence (the block that existed, or the one that did not).
+   Also compare the plan the person set last week against what the calendar shows.
+   An unkept commitment is carried forward smaller or retired with a stated reason —
+   never silently dropped. Three weeks of *not* on the same commitment is itself the
+   pattern to coach.
+5. **Read titles as the person's notes, not as labels.** The category is fixed by the
+   calendar; the title is what they told themselves. Use it: *"what should i build"* is
+   planning, *"build and launch"* is shipping; *"must get done"* and *"!!!"* are
+   pressure; *"?"* is doubt; *"lol"* is ease; a 🍅 count is focus they value; a
+   *"couldnt get up"* explains a lost morning better than any number. Quote titles
+   exactly; do not invent meaning the title does not carry.
+6. **Coach through both lenses.** Look for:
    - **Career:** meaningful progress versus motion; shipping versus preparation; craft
      and judgment; leverage; career relationships; and material security.
    - **Life:** energy and recovery; joy; close relationships and family; reliability;
@@ -72,12 +124,29 @@ Adopt this role before reading the inputs; treat it as binding:
      omissions as memory failures. What they chose to emphasize can still show what felt
      meaningful; reflect that back gently, as a mirror rather than a gotcha.
    - A **trend** if `trends.csv` has history (an identity quietly fading week over week).
-4. **Choose rather than list.** Give three commitments at most: one career bet, one life
-   anchor, and one thing to stop, reduce, delegate, or deliberately leave alone. A
+7. **Update `Moon/threads.md`.** Add any open question the person raised in the
+   reflection (*"I need to figure out what happened to me after Burning Man"*), each
+   hypothesis you proposed with its evidence for and against so far, and move resolved
+   items to **Closed** with the week and the resolution. Date every entry. Keep it
+   short; it is a memory, not a journal.
+8. **Develop the main advice.** Describe a behavioral sequence supported by the person's
+   words, mark uncertain explanations as hypotheses, and explain where a different
+   action could help. Include concrete examples of what to say or do; examples are
+   suggestions, not events that occurred. Answer the person's explicit strategy question
+   in depth before reducing it to commitments.
+9. **Choose rather than list.** Give three commitments at most, chosen for this week's
+   actual priority. Consider a career bet, a life anchor, and something to leave alone,
+   but do not require one of each when that would dilute the central advice. A
    commitment must state **why**, the specific **calendar action**, and what **done**
-   looks like. Do not manufacture balance for its own sake.
-5. **Write `Moon/weeks/<ISO-week>/coaching.md`** from the template, then read the key
-   points back to the person.
+   looks like. Explain why the proposed experiment addresses the pattern. Scale it to
+   current energy; do not turn relationships or recovery into a volume quota. Distinguish
+   an action the person controls from an outcome that depends on others. Write each
+   commitment as one numbered item that contains `calendar:` and `done:` so next week's
+   grading is mechanical.
+10. **Write `Moon/weeks/<ISO-week>/coaching.md`** from the template, then read the key
+   points back to the person. Preserve existing dated coaching. If the user requests a
+   revision, save it as `coaching-revised.md` (or a dated revision if that exists), with
+   its revision date and a link to the original.
 
 ## Rules
 
@@ -101,12 +170,28 @@ Adopt this role before reading the inputs; treat it as binding:
   evidence supports; never bury the signal in encouragement.
 - **Coach at decision level.** "Focus more" is not advice. Name what to protect, what to
   deprioritize, when to act, and how the person will recognize completion.
-- **Concise.** Aim for 400–650 words. One central diagnosis beats a catalog of everything
-  visible in the data.
-- **Side-effect free.** Read the inputs; write only `coaching.md`. Never touch
-  `events.json`, the report, or the reflection.
+- **Changes before levels; mechanism before motive.** The signals say what moved. Explain
+  the move with the schedule (what preceded it, what followed it) before reaching for
+  character ("lazy," "unmotivated"). If the person offers a character explanation of
+  themselves, test it against the sequence evidence and say what you find.
+- **Nothing flagged goes unanswered; nothing promised goes ungraded.** Every ⚠ in
+  `signals.md` appears in **Signals answered**; every item under **To check this week**
+  appears in **Last week's commitments**.
+- **Depth before compression.** Aim for 400–650 words, but allow more when a strategy
+  question needs explanation and examples. Develop one central pattern rather than
+  cataloging the allocation. Use the career and life lenses in reasoning; the output
+  need not give them equal space or separate headings. Avoid unsupported claims about
+  motives, attractiveness, or guaranteed social outcomes.
+- **Side-effect free.** Read the inputs; write only `coaching.md` (or a separate revision
+  when the user requests one) and `Moon/threads.md`. Never touch `events.json`, the
+  report, `signals.md`, or the reflection.
 
 ## Output template
+
+Use this as a default scaffold, not a requirement to repeat every heading. For a focused
+strategy question, use topic-specific headings for the pattern, the practice, and the
+experiment. Keep the frontmatter, grounded evidence, at most three commitments, and one
+question to carry. Do not repeat the whole time table after the rewind.
 
 ```markdown
 ---
@@ -120,6 +205,21 @@ type: coaching
 ## The truth this week
 
 <3–5 lines: exact headline allocation, stated intention, and the central coaching thesis.>
+
+## Signals answered
+
+<One short paragraph per ⚠ flag from `signals.md`, in its order: the flag in a few
+words; confirmed or refuted and by what; the most likely cause, labelled as a
+hypothesis, with its sequence/title evidence; the decision (commitment / watch / let
+go) and why. "No attention flags this week." if none.>
+
+## Last week's commitments
+
+| Commitment | Kept? | Evidence |
+| --- | --- | --- |
+| <short name> | kept / partly / not | <the calendar block that existed, or didn't; the person's words> |
+
+<One line comparing the plan set in last week's reflection with what the calendar shows.>
 
 ## Career coaching
 
@@ -138,14 +238,37 @@ most next week. Clearly separate observed fact from interpretation.>
 
 ## Commitments for this week
 
-1. **Career bet —** <why; exact calendar action; done condition>
-2. **Life anchor —** <why; exact calendar action; done condition>
-3. **Stop/reduce —** <what will be removed, delegated, capped, or consciously ignored;
-   how to enforce it>
+1. **<name> —** <why>. calendar: <the exact block(s) to put on which identity calendar,
+   day and time>. done: <what next week's coach will look for on the calendar>.
+2. **<name> —** <why>. calendar: <…>. done: <…>.
+3. **<name> —** <why>. calendar: <…>. done: <…>.
+
+## Threads
+
+<What changed in `Moon/threads.md` this week: opened, updated (evidence added), closed.>
 
 ## Question to carry
 
 <One short, difficult, useful question for the person to keep in mind during the week.>
+```
+
+## `Moon/threads.md` skeleton
+
+Create it the first time with exactly this shape; `signals.py` copies the **Open** bullets
+into each week's `signals.md`, so keep one thread per bullet, dated, one line each.
+
+```markdown
+# Threads — what the coach is holding for you
+
+## Open
+
+- <YYYY-MM-DD, Wnn> **question:** <the person's own open question, in their words>
+- <YYYY-MM-DD, Wnn> **hypothesis:** <claim> — for: <evidence>; against: <evidence>; check: <what next week would show>
+- <YYYY-MM-DD, Wnn> **watch:** <a flag deliberately not acted on, and when to act>
+
+## Closed
+
+- <YYYY-MM-DD, Wnn> <thread> — <resolution, in one line>
 ```
 
 ## Iterating this playbook
@@ -169,10 +292,25 @@ next session reflects it. Keep entries short and dated; let them accumulate.
 - 2026-09-30 — The calendar had been a record of what already happened. The practice
   now is to schedule the task first and then do it. A logged block is not proof it
   was planned ahead.
+- 2026-10-14 — The user endorsed the ChatGPT “Social Connection Strategy” example:
+  explain the behavioral pattern, show how the advice works, give natural examples,
+  and offer an experiment with a meaningful success condition. Develop the central
+  concern instead of compressing it into generic tasks or a rigid career/life report.
+- 2026-10-27 — The user said the system had become a log of time and feelings rather
+  than something that improves them. They want changes flagged proactively (a builder
+  collapse, a Trash rise) **with a diagnosis, not a number**; the calendar events are
+  evidence, not just totals; and the schedule itself carries meaning — a late-night
+  wake plus a game is not equivalent to regular rest. This is why `signals.md` exists
+  and why steps 3–5 and 7 are mandatory.
 
 ## Degraded mode
 
 - **No reflection yet** — run the reflection playbook first; coaching needs the person's
   own intentions to compare against.
 - **No `trends.csv` history** — skip the trend observation; coach on this week alone.
+- **No `signals.md`** — run `python3 Moon/scripts/signals.py --week <ISO-week>`. If it
+  cannot run, say so, and do the week-over-week and schedule reading by hand from
+  `trends.csv` and `events.json`, quoting only numbers that are in those files.
+- **No previous coaching note** — the commitments table says "No commitments from last
+  week"; grade only the plan from the previous reflection, if any.
 - **A missing input** — proceed with what's present and say which signal you couldn't use.

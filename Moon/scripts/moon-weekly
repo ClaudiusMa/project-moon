@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Moon M5 — weekly runner.
 
-Chain ingestion -> engine for the most recent completed week (or --week),
-print a summary, and point to the reflection playbook (Engine B).
+Chain ingestion -> engine -> signals for the most recent completed week (or
+--week), print a summary, and point to the reflection playbook (Engine B).
 
     moon-weekly                       # most recent completed week, using feeds.yaml
     moon-weekly --week 2026-W24
@@ -20,6 +20,7 @@ import moon_common as mc
 import ingest
 import engine
 import coverage
+import signals
 
 
 def main(argv=None):
@@ -52,17 +53,20 @@ def main(argv=None):
         return
     coverage.validate(items)
     print(f"== Moon weekly · {week_key} ==")
-    print("[1/2] Ingesting calendars ...")
+    print("[1/3] Ingesting calendars ...")
     ingest.run(week_key=week_key, feeds_path=args.feeds,
                ics_overrides=ingest.parse_ics_overrides(args.ics),
                tz_name=args.timezone)
-    print("[2/2] Computing cognitive hours ...")
+    print("[2/3] Computing cognitive hours ...")
     engine.run(week_key=week_key, source_items=items, tz_name=tz_label)
+    print("[3/3] Reading the week's signals ...")
+    signals.run(week_key)
 
     report = mc.WEEKS_DIR / week_key / "time-report.md"
     playbook = mc.MOON_DIR / "playbooks" / "reflection.md"
     print()
     print(f"Report: {report}")
+    print(f"Signals: {mc.WEEKS_DIR / week_key / 'signals.md'}")
     print(f"Next — weekly reflection ritual: {playbook}")
     print("  Open it with your agent to see your calculated time and week rewind,")
     print("  then run the 6-question reflection.")

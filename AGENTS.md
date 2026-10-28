@@ -53,15 +53,23 @@ week moves through five steps:
    `events.json`. Flag any calendar whose Google name no longer matches `categories.yaml`.
 2. **Compute** — Merge-and-ceil per category to get cognitive hours; write a
    human-readable `time-report.md` and append a row per category to `trends.csv`.
-3. **Reflect** — Run the reflection playbook: first see the exact calculated allocation
-   and a factual calendar-title rewind, then answer the bare questions (you review *last
-   week* and plan *this week*), lightly proofread, saved to `reflection.md`.
-4. **Coach** — Run the coaching playbook as an integrated life and career coach: it reads
-   the reflection against the week's `time-report.md` and `events.json` and writes
-   grounded, prioritized advice to `coaching.md`.
-5. **Trend** — `trends.csv` accumulates across weeks as the long-term signal.
+3. **Signal** — Read the week against the person's own prior weeks and against the
+   clock: identity drops and surges versus the trailing median, 0h streaks, Trash
+   rises with a time-of-day breakdown, late nights, lost mornings, early long days,
+   and what followed what (a 23:00 build → a 07:00–10:00 lost morning). Rules live in
+   `config/signals.yaml`; output is `signals.md` + `signals.json`. Facts, no advice.
+4. **Reflect** — Run the reflection playbook: first see the exact calculated allocation,
+   a factual calendar-title rewind, and the signal flags, then answer the bare questions
+   (you review *last week* and plan *this week*), lightly proofread, saved to
+   `reflection.md`.
+5. **Coach** — Run the coaching playbook as an integrated life and career coach: it
+   answers every attention flag with a cause and a decision, grades last week's
+   commitments, reads the reflection against `time-report.md` and `events.json`, writes
+   grounded advice with checkable commitments to `coaching.md`, and keeps its running
+   memory of the person in `Moon/threads.md`.
+6. **Trend** — `trends.csv` accumulates across weeks as the long-term signal.
 
-Steps 1–2 are **Engine A** (deterministic Python). Steps 3–4 are **Engine B** (markdown
+Steps 1–3 are **Engine A** (deterministic Python). Steps 4–5 are **Engine B** (markdown
 playbooks). They talk only through the fixed data contracts below.
 
 ## Where things live
@@ -96,8 +104,24 @@ activity categories — there is no auto-migration (a clean start).
   Timed events lasting at least 24 hours also exclude that window on every covered date;
   their original interval remains in `events.json`, and each still counts as one source
   event. Followed by the event log.
+- `Moon/config/signals.yaml` — the signal rules: thresholds (drop/surge ratios, streak
+  length, late-night and lost-morning definitions), the focus identities that need deep
+  blocks, title markers (🍅, ✖️), and the title lexicons that point a reader at events
+  worth reading. Committed; user-editable; defaults are built in.
+- `Moon/weeks/<ISO-week>/signals.md` + `signals.json` — Engine A's observations for the
+  week: `flags` (`severity` attention/notice, `kind`, `category`, `title`, `evidence`),
+  `week_over_week` (hours, previous recorded week, trailing median, 0h streak, blocks,
+  longest block), `days` (per local day: first identity event, last event end, identity
+  / Trash / Invisible minutes, late night, lost mornings, early long days),
+  `sequences`, `trash` breakdown, `markers`, and `carry` (last week's plan, commitments,
+  open threads). Never alters events, reports, or trends. Regenerated on every run.
 - `Moon/weeks/<ISO-week>/reflection.md` — the saved weekly reflection.
-- `Moon/weeks/<ISO-week>/coaching.md` — the saved weekly coaching note.
+- `Moon/weeks/<ISO-week>/coaching.md` — the saved weekly coaching note. Its
+  **Commitments for this week** items carry `calendar:` and `done:` so the next week's
+  signals can list them for grading.
+- `Moon/threads.md` — the coach's running memory: **Open** (questions, hypotheses,
+  watches) and **Closed** threads, one dated bullet each. Gitignored; written only by the
+  coaching playbook; its Open bullets are copied into each week's `signals.md`.
 - `Moon/trends.csv` — long format, one row per category per week:
   `week_iso, category_set_version, category_id, cognitive_hours, raw_minutes, event_count`.
 - `Astronaut/expected-calendars.json` — private expected source counts by category ID,
@@ -123,6 +147,12 @@ activity categories — there is no auto-migration (a clean start).
   estimate, round, or "correct" the math by hand. The engine also owns the Invisible
   sleep-window and multi-day overnight exclusions; an agent must never add those hours
   back mentally.
+- **Flags come only from the signals stage; answers come only from the coach.**
+  `signals.py` (locked by `test_signals.py`) decides what changed and what the schedule
+  shape was; an agent shows its flags verbatim in the rewind and never invents or drops
+  one. The coaching playbook must answer every attention flag with a cause and a
+  decision and grade every carried commitment. Title lexicons and markers are pointers
+  for a reader; they never assign a category or change a number.
 - **Verify complete source coverage before a review.** Run `./Moon/scripts/moon-weekly
   --week <ISO-week>` and then the same command with `--check-coverage` before showing
   the allocation or starting reflection/coaching. Missing sources or failed retrieval
@@ -151,10 +181,12 @@ The flow is meant to run once a week, after a week has closed, in one short sitt
 Compute is unattended; reflection and coaching need a person.
 
 1. **Compute (unattended).** Run the `moon-weekly` runner (Engine A). It chains ingestion
-   → cognitive-hour engine for the **most recent completed week**, writes `events.json`
-   and `time-report.md` under `Moon/weeks/<ISO-week>/`, appends rows to `Moon/trends.csv`,
-   prints a one-screen summary, and flags any calendar rename. Deterministic — same
-   calendars, same numbers.
+   → cognitive-hour engine → signals for the **most recent completed week**, writes
+   `events.json` and `time-report.md` under `Moon/weeks/<ISO-week>/`, appends rows to
+   `Moon/trends.csv`, then writes `signals.md` + `signals.json`, prints a one-screen
+   summary with the week's flags, and flags any calendar rename. Deterministic — same
+   calendars, same numbers, same flags. (`python3 Moon/scripts/signals.py --week
+   <ISO-week>` regenerates the signals alone.)
 2. **Reflect, then coach (interactive).** Open the reflection playbook
    ([`Moon/playbooks/reflection.md`](Moon/playbooks/reflection.md)): it shows Engine A's
    exact time-by-identity table and a concise factual schedule rewind **before** asking
@@ -198,3 +230,16 @@ HAI lives entirely in `.hai/`. Run its CLI commands from the product root with
 `--target .hai`, including installation, updates, doctor, and worktree commands;
 never target the product root for a harness installation or update. Moon's runtime
 paths stay rooted in this product workspace.
+
+## Calendar notation context
+
+- ✖️ appears on some titles (e.g. *"job apps and paper ✖️"*, *"bilibili etc ✖️"*). Its
+  meaning has **not** been confirmed with the user; `signals.md` lists such events as
+  "meaning not confirmed." Ask once, then record the answer here and in
+  `config/signals.yaml`.
+- 2026-10-06 — 🍅 means Pomodoro timer sessions. A number alongside it (such as
+  `🍅 2`, `🍅 x 2`, or `3 🍅`) records how many sessions ran. The user regards these
+  as highly productive focus time and values more sessions. Use this meaning in
+  factual rewinds and reflection/coaching context; it does not change category
+  assignment or Engine A cognitive-hour calculations. Do not invent a session
+  count when none is specified.

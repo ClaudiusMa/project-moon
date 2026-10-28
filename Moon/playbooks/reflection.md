@@ -15,9 +15,11 @@ reflection's *"What's your plan?"*, so each week you see plan versus reality.
 
 Rewind the week before asking for reflection. First show the exact calculated time spent
 in every identity and non-identity bucket, then give a short, factual recap of what was
-on the calendar. This re-anchors the person's memory before they answer the bare
-questions in one pass. Happiness is a free list. *"What's your plan?"* is **carried in**
-from last week (not asked).
+on the calendar, then the engine's **signals** — what changed against prior weeks, the
+schedule's shape, and what followed what — as facts. This re-anchors the person's memory
+and puts the week's real changes in front of them before they answer the bare questions
+in one pass. Happiness is a free list. *"What's your plan?"* and last week's coaching
+**commitments** are **carried in** (not asked).
 
 ## Inputs (read-only)
 
@@ -27,6 +29,11 @@ from last week (not asked).
   cognitive hours, share percentages, and full category list.
 - **Events** — read `Moon/weeks/<ISO-week>/events.json` for calendar titles, times, and
   their scheduling-time identity.
+- **Signals** — read `Moon/weeks/<ISO-week>/signals.md` (written by `moon-weekly`, or by
+  `python3 Moon/scripts/signals.py --week <ISO-week>`): the deterministic flags
+  (identity drops and surges, 0h streaks, Trash rises, late nights, lost mornings,
+  late-night → lost-morning sequences), the day-by-day schedule shape, the Trash
+  breakdown, and last week's plan and commitments.
 - **Previous reflection** — read only to carry its *"What do you plan to do this week?"*
   forward into this reflection's *"What's your plan?"*. If there's none, that section is
   "No plan from last week."
@@ -51,9 +58,9 @@ reflection file.
    both succeed. A missing calendar is missing data, never 0h. Do not automatically
    run `--confirm-sources` to bypass a failure: restore the source list or obtain the
    user's explicit confirmation of an intentional setup/change. Once verified,
-   **read the computed week.** Read that week's `time-report.md` and `events.json`. Never
-   calculate, estimate, re-round, or correct a number yourself; all numbers must be
-   copied from Engine A's report.
+   **read the computed week.** Read that week's `time-report.md`, `events.json`, and
+   `signals.md`. Never calculate, estimate, re-round, or correct a number yourself; all
+   numbers must be copied from Engine A's report, and every flag from `signals.md`.
 3. **Carry the plan.** Read the previous reflection's *"What do you plan to do next
    week?"* and place it in this reflection's *"What's your plan?"* (verbatim). If there's
    no prior reflection, use "No plan from last week."
@@ -88,7 +95,19 @@ Present this block before the six questions:
      imply that those excluded overnight portions contributed to an identity's hours.
    - Describe these as **scheduled activities**, not proof that they happened.
    - Do not coach, judge the allocation, infer intent from titles, or preview answers.
-4. `## Carried plan` followed by the prior week's plan (or "No plan from last week.").
+4. `## Signals` followed by the **Flags** list from `signals.md`, verbatim (⚠ and ℹ lines
+   with their evidence). If the file says there are no flags, write "No flags this week."
+   These are engine facts — a drop against the person's own prior weeks, a late night
+   followed by a lost morning — shown so the week's real changes are in view before the
+   person answers. Do not explain, soften, interpret, or answer them here; the coaching
+   playbook does that. If `signals.md` is missing, run
+   `python3 Moon/scripts/signals.py --week <ISO-week>` first; if it cannot run, say the
+   signals are unavailable and continue.
+5. `## Carried plan` followed by the prior week's plan (or "No plan from last week.").
+6. `## Carried commitments` followed by the commitments listed under **To check this
+   week** in `signals.md`, verbatim as an unchecked list (or "No commitments from last
+   week."). The person grades them in their own words when they answer *"How did it
+   go?"*; do not grade them here.
 
 Only after this whole block is visible should the six questions appear.
 
@@ -118,7 +137,9 @@ Agent notes (do **not** show these):
 - **"What's your plan?"** is carried from the previous reflection's *"What do you plan to
   do this week?"* — show it as context, never ask it fresh.
 - The rewind is context, not a draft response. Never pre-fill an answer from calendar
-  titles or turn the recap into coaching.
+  titles or turn the recap or the signals into coaching.
+- If the person reacts to a flag ("why did builder drop?"), note that the coaching step
+  answers it, and keep intake moving; record what they said under the relevant answer.
 - **"What do you plan to do this week?"** carries forward to next week's *"What's your
   plan?"*.
 
@@ -179,6 +200,8 @@ After the reflection is saved, run the **coaching playbook**
   before a new review. Existing personal reflections and coaching remain untouched.
 - **No time report or events** — run Engine A for the target week first. Do not begin the
   six-question intake without showing the calculated allocation and calendar rewind.
+- **No `signals.md`** — run `python3 Moon/scripts/signals.py --week <ISO-week>`. If it
+  fails, show the rewind without the Signals section and say so; never improvise flags.
 - **No counted events** — still show the complete Summary table and say that no counted
   calendar events were recorded for the week.
 - **No previous reflection** — *"What's your plan?"* is "No plan from last week."
