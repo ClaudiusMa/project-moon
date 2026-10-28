@@ -131,12 +131,10 @@ def _prepare_category_events(events, category):
     return segments, source_event_count, all_day_excluded, 0, window_minutes_excluded
 
 
-def compute_category(events):
-    """For one category's events, merge into blocks and accumulate hours.
-
-    Returns (cognitive_hours, raw_minutes). `raw_minutes` is the union of time
-    covered (post-merge, so within-category overlap is not double counted);
-    `cognitive_hours` is the sum of each block rounded up to whole hours."""
+def merge_blocks(events):
+    """Merge one category's events into sorted (start, end) blocks: overlapping or
+    touching events become one block. Shared by the cognitive-hour math and the
+    signals stage so "a block" means the same thing everywhere."""
     intervals = sorted(
         (datetime.fromisoformat(e["start_local"]), datetime.fromisoformat(e["end_local"]))
         for e in events
@@ -148,6 +146,16 @@ def compute_category(events):
                 blocks[-1] = (blocks[-1][0], e)
         else:
             blocks.append((s, e))
+    return blocks
+
+
+def compute_category(events):
+    """For one category's events, merge into blocks and accumulate hours.
+
+    Returns (cognitive_hours, raw_minutes). `raw_minutes` is the union of time
+    covered (post-merge, so within-category overlap is not double counted);
+    `cognitive_hours` is the sum of each block rounded up to whole hours."""
+    blocks = merge_blocks(events)
 
     cognitive_hours, raw_minutes = 0, 0.0
     for s, e in blocks:

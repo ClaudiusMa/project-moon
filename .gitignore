@@ -9,6 +9,8 @@ Astronaut/
 Moon/weeks/
 # Weekly aggregates per identity can reveal personal life patterns — keep local on a public repo.
 Moon/trends.csv
+# Running coaching threads (open questions, hypotheses about you) — personal.
+Moon/threads.md
 
 # Build scaffolding — local-only (HAI-Harness; not part of the product others install).
 .hai/

@@ -27,10 +27,16 @@ calendars and weekly data never leave your machine.
   the identity. Short events that cross midnight still count in full.
 - **The weekly report is an honest mirror.** It shows each identity's *share* of your week
   as a percentage. An identity you say matters but funded 2% is the signal that matters.
+- **Signals say what changed, not just what was.** Before you reflect, Moon reads the
+  week against your own prior weeks and against the clock: an identity that collapsed,
+  Trash time that rose and *where in the day* it sat, late nights and the lost mornings
+  that followed them, an identity at 0h for the fourth week running. Facts, from
+  deterministic rules you can edit.
 - **Reflection + coaching close the loop.** Before reflection intake, Moon shows the
-  exact time spent in every identity and a concise calendar-title rewind. You answer the
-  bare questions with the week fresh in mind, then a coach reads your answers against
-  the actual schedule and advises the week ahead.
+  exact time spent in every identity, a concise calendar-title rewind, and the flags. You
+  answer the bare questions with the week fresh in mind, then a coach answers every flag
+  with a cause and a decision, grades last week's commitments, and advises the week
+  ahead — keeping its memory of you in a running threads file.
 
 The goal isn't a perfect taxonomy — it's a weekly check on whether your hours are making
 your desired self real.
